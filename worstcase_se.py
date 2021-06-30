@@ -1,7 +1,9 @@
 import numpy as np
 import numdifftools as nd
 import scipy.optimize as opt
+import cvxopt as cvx
 from statsmodels.regression.quantile_regression import QuantReg
+from scipy.stats import chi2, norm
 
 
 """Worst-case standard errors for minimum distance estimates
@@ -79,6 +81,7 @@ class MinDist:
             = self.estim_update(param_estim, transf, transf_deriv,
                                 transf_estim=transf_estim, transf_jacob=transf_jacob,
                                 moment_fit=moment_fit, moment_jacob=moment_jacob)
+        moment_loadings = self._get_moment_loadings(moment_jacob, weight_mat, transf_jacob)
         transf_num = 1 if np.isscalar(transf_estim) else len(transf_estim)
         
         # Efficient estimates
@@ -92,11 +95,11 @@ class MinDist:
                 else: # Full optimization
                     # Do nothing, since param_estim already contains estimates of interest
                     pass
-                moment_loadings = self._get_moment_loadings(moment_jacob, weight_mat, transf_jacob)
                 
             else: # Limited information
             
                 if transf_num > 1: # If more than one parameter of interest, handle each separately by recursive call
+                
                     transf_estim_init = transf_estim.copy()
                     transf_estim = np.empty(transf_num)
                     transf_estim_se = np.empty(transf_num)
@@ -114,7 +117,9 @@ class MinDist:
                         transf_estim[i] = the_res['transf_estim']
                         transf_estim_se[i] = the_res['transf_estim_se']
                         moment_loadings[:,i] = the_res['moment_loadings']
+                        
                 else: # If only single parameter of interest
+                
                     transf_estim_se, moment_loadings = self.worstcase_eff(moment_jacob, transf_jacob)
                     if one_step: # One-step estimation
                         transf_estim = self._get_onestep(moment_fit, None, moment_loadings, transf_estim)
@@ -129,13 +134,13 @@ class MinDist:
         
         # Start building results dictionary
         res = {'transf_estim': transf_estim,
-                'param_estim': param_estim,
-                'weight_mat': weight_mat,
-                'moment_fit': moment_fit,
-                'moment_jacob': moment_jacob,
-                'moment_loadings': moment_loadings,
-                'transf_jacob': transf_jacob,
-                'full_info': self.full_info}
+               'param_estim': param_estim,
+               'weight_mat': weight_mat if (self.full_info or (not eff)) else None,
+               'moment_fit': moment_fit,
+               'moment_jacob': moment_jacob,
+               'moment_loadings': moment_loadings,
+               'transf_jacob': transf_jacob,
+               'transf_num': transf_num}
         
         # Standard errors
         if self.full_info: # Full information
@@ -147,10 +152,99 @@ class MinDist:
                 # Do nothing, since standard errors have already been computed above
                 pass
             else:
-                transf_estim_se = np.abs(moment_loadings) @ self.moment_se.reshape(-1,1)
+                transf_estim_se = np.abs(moment_loadings.T) @ self.moment_se.reshape(-1,1)
         
         res['transf_estim_se'] = transf_estim_se
         
+        return res
+    
+    
+    def test(self, estim_res, joint=True, test_weight_mat=None):
+        
+        """Test whether transformed parameters equal zero
+        """
+        
+        # t-statistics
+        tstat = estim_res['transf_estim']/estim_res['transf_estim_se']
+        tstat_pval = 2*norm.cdf(-np.abs(tstat))
+        res = {'estim_res': estim_res,
+               'tstat': tstat,
+               'tstat_pval': tstat_pval}
+        
+        if not joint:
+            return res
+        
+        # Weight matrix for joint test statistic
+        if test_weight_mat is None:
+            if self.full_info: # Full information
+                test_weight_mat = np.linalg.inv(estim_res['transf_estim_varcov'])
+            else: # Limited information
+                # Ad hoc choice motivated by independence
+                test_weight_mat = np.linalg.inv(estim_res['moment_loadings'].T @ np.diag(self.moment_se**2) @ estim_res['moment_loadings'])
+        
+        # Check dimensions
+        assert test_weight_mat.shape == (estim_res['transf_num'],estim_res['transf_num'])
+        
+        # Test statistic
+        joint_stat = estim_res['transf_estim'] @ test_weight_mat @ estim_res['transf_estim'].reshape(-1,1)
+        
+        # p-value
+        if self.full_info:
+            joint_pval = 1-chi2.cdf(joint_stat, estim_res['transf_num'])
+        else:
+            max_trace, max_trace_varcov = self.solve_sdp(estim_res['moment_loadings'] @ test_weight_mat @ estim_res['moment_loadings'].T)
+            joint_pval = 1-chi2.cdf(joint_stat/max_trace, 1)
+            if joint_pval>0.215: # Test can only be used at significance levels < 0.215
+                joint_pval = np.array([1])
+            res['max_trace'] = max_trace
+            res['max_trace_varcov'] = np.array(max_trace_varcov)
+        
+        res.update({'test_weight_mat': test_weight_mat,
+                    'joint_stat': joint_stat.item(),
+                    'joint_pval': joint_pval.item()})
+        
+        return res
+    
+    
+    def overid(self, estim_res, joint=True):
+        
+        """Over-identification test
+        """
+        
+        # Errors in fitting moments
+        moment_error = self.moment_estim - estim_res['moment_fit']
+        
+        # Standard errors for moment errors
+        M = np.eye(self.moment_num) - self._get_moment_loadings(estim_res['moment_jacob'],
+                                                                estim_res['weight_mat'],
+                                                                estim_res['moment_jacob']).T
+        the_estim_res = self.fit(lambda x: x,
+                                 eff=False,
+                                 weight_mat=np.eye(self.moment_num),
+                                 param_estim=estim_res['param_estim'],
+                                 transf_estim=moment_error,
+                                 transf_jacob=M,
+                                 moment_fit=self.moment_estim,
+                                 moment_jacob=np.eye(self.moment_num))
+        '''Only the inputs "weight_mat", "transf_jacob", and "moment_jacob" are
+        actually used to calculate the standard errors - the other inputs are
+        only provided to avoid unnecessary computations
+        '''
+        
+        # Test statistic and p-value
+        the_test_res = self.test(the_estim_res, joint=joint, test_weight_mat=estim_res['weight_mat'])
+        
+        res = {'moment_error': moment_error,
+               'moment_error_se': the_estim_res['transf_estim_se'],
+               'tstat': the_test_res['tstat'],
+               'tstat_pval': the_test_res['tstat_pval']}
+        
+        if joint:
+            res.update({'joint_stat': the_test_res['joint_stat'],
+                        'joint_pval': the_test_res['joint_pval']})
+            if self.full_info: # Adjust degrees of freedom
+                res['joint_pval'] = 1-chi2.cdf(the_test_res['joint_stat'], self.moment_num-len(estim_res['param_estim']))
+    
         return res
         
     
@@ -177,6 +271,24 @@ class MinDist:
         se = np.abs(resid).sum()
         
         return se, moment_loadings
+    
+    
+    def solve_sdp(self, A):
+        
+        """Solve semidefinite programming problem
+        max tr(A*V) s.t. V psd and diag(V)=self.moment_se**2
+        """
+        
+        # Coefficient matrices
+        c = cvx.matrix(-self.moment_se.reshape(-1,1)**2,tc='d')
+        G = cvx.sparse(cvx.matrix(np.eye(self.moment_num**2)[:,np.eye(self.moment_num).flatten()==1]))
+        h = cvx.matrix(-A,tc='d')
+        
+        # Solve SDP
+        sol = cvx.solvers.sdp(c,Gs=[G],hs=[h])
+        
+        # Return objective value and optimal V
+        return sol['dual objective'], sol['zs'][0]
     
     
     def estim_update(self, param_estim, transf, transf_deriv,
