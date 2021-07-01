@@ -138,7 +138,7 @@ class MinDist:
                'weight_mat': weight_mat if (self.full_info or (not eff)) else None,
                'moment_fit': moment_fit,
                'moment_jacob': moment_jacob,
-               'moment_loadings': moment_loadings,
+               'moment_loadings': moment_loadings if (self.full_info or (not eff)) else None,
                'transf_jacob': transf_jacob,
                'transf_num': transf_num}
         
@@ -152,7 +152,7 @@ class MinDist:
                 # Do nothing, since standard errors have already been computed above
                 pass
             else:
-                transf_estim_se = np.abs(moment_loadings.T) @ self.moment_se.reshape(-1,1)
+                transf_estim_se = self.moment_se @ np.abs(moment_loadings)
         
         res['transf_estim_se'] = transf_estim_se
         
@@ -167,8 +167,7 @@ class MinDist:
         # t-statistics
         tstat = estim_res['transf_estim']/estim_res['transf_estim_se']
         tstat_pval = 2*norm.cdf(-np.abs(tstat))
-        res = {'estim_res': estim_res,
-               'tstat': tstat,
+        res = {'tstat': tstat,
                'tstat_pval': tstat_pval}
         
         if not joint:
