@@ -36,14 +36,14 @@ class MinDist:
         self.moment_fct_deriv = self._deriv(moment_fct_deriv, self.moment_fct)
         
         # Check inputs
-        assert (moment_se is not None) or (moment_varcov is not None)
-        assert (moment_se is None) or (len(self.moment_se)==self.moment_num)
-        assert (moment_varcov is None) or (self.moment_varcov.shape==(self.moment_num,self.moment_num))
-        assert np.all(np.isreal(self.moment_estim))
-        assert np.all(np.isreal(self.moment_se))
-        assert np.all(np.isreal(self.moment_varcov))
-        assert np.isscalar(self.zero_thresh) and (self.zero_thresh>=0)
-        assert self.moment_num>=1
+        assert (moment_se is not None) or (moment_varcov is not None), 'Either "moment_se" or "moment_varcov" must be supplied'
+        assert (moment_se is None) or (len(self.moment_se)==self.moment_num), 'Dimension of "moment_se" does not match "moment_estim"'
+        assert (moment_varcov is None) or (self.moment_varcov.shape==(self.moment_num,self.moment_num)), 'Dimension of "moment_varcov" is wrong'
+        assert np.all(np.isreal(self.moment_estim)), 'Wrong input type for "moment_estim"'
+        assert np.all(np.isreal(self.moment_se)), 'Wrong input type for "moment_se"'
+        assert np.all(np.isreal(self.moment_varcov)), 'Wrong input type for "moment_varcov"'
+        assert np.isscalar(self.zero_thresh) and (self.zero_thresh>=0), '"zero_thresh" must be a positive scalar'
+        assert self.moment_num>=1, '"moment_estim" must have at least one element'
         
     
     def fit(self, transf=lambda x: x, weight_mat=None,
@@ -56,7 +56,7 @@ class MinDist:
         """
         
         # Check inputs
-        assert (param_estim is not None) or (opt_init is not None) or (estim_fct is not None)
+        assert (param_estim is not None) or (opt_init is not None) or (estim_fct is not None), 'One of the following must be supplied: "param_estim", "opt_init", or "estim_fct"'
         
         # Transformation Jacobian function
         transf_deriv = self._deriv(transf_deriv, transf)
@@ -182,7 +182,7 @@ class MinDist:
                 test_weight_mat = np.linalg.inv(estim_res['moment_loadings'].T @ np.diag(self.moment_se**2) @ estim_res['moment_loadings'])
         
         # Check dimensions
-        assert test_weight_mat.shape == (estim_res['transf_num'],estim_res['transf_num'])
+        assert test_weight_mat.shape == (estim_res['transf_num'],estim_res['transf_num']), 'Dimension of "test_weight_mat" is wrong'
         
         # Test statistic
         joint_stat = estim_res['transf_estim'] @ test_weight_mat @ estim_res['transf_estim'].reshape(-1,1)
