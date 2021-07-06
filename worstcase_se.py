@@ -8,13 +8,14 @@ from scipy.linalg import block_diag
 
 
 """Worst-case standard errors for minimum distance estimates
-without knowledge of the correlation matrix for the matched moments
-    
+without knowledge of the full correlation matrix for the matched moments
+
 If desired, also computes:
 - worst-case efficient estimates
 - full-information efficient estimates
-- over-identification test for each individual moment
-    
+- joint test of parameter restrictions
+- over-identification test
+
 Reference:
 Cocci, Matthew D. & Mikkel Plagborg-Moller, "Standard Errors for Calibrated Parameters"
 https://scholar.princeton.edu/mikkelpm/calibration
