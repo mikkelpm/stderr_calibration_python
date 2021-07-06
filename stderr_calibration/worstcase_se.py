@@ -39,7 +39,7 @@ class MinDist:
             self.moment_varcov = np.asarray(moment_varcov)
         else:
             self.moment_varcov = np.empty((self.moment_num,self.moment_num))
-            self.moment_varcov[np.eye(self.moment_num)==1] = np.asarray(moment_se)
+            self.moment_varcov[np.eye(self.moment_num)==1] = np.asarray(moment_se**2)
             self.moment_varcov[np.eye(self.moment_num)==0] = np.nan
         
         # Check inputs
