@@ -378,20 +378,21 @@ class MinDist:
         
         """Solve semidefinite programming problem
         max tr(A*V) s.t. V psd and known elements of V
+        using CVXOPT package
         """
         
         # Find elements of V with known values (below diagonal)
         inds = np.all([(np.tril(np.ones((self.moment_num,self.moment_num)))==1),1-np.isnan(self.moment_varcov)],axis=0)
         
-        # Coefficient matrices
-        c = cvx.matrix(-self.moment_varcov[inds.T].reshape(-1,1),tc='d')
+        # Coefficient matrices for CVXOPT: max tr(h*V) s.t. G'*vec(V)+c=0
+        # Note: For some reason, CVXOPT's "vec" operator multiplies off-diagonal elements by 2
+        factor = 2-np.eye(self.moment_num)
+        c = cvx.matrix(-(self.moment_varcov*factor)[inds.T].reshape(-1,1),tc='d')
         G = cvx.sparse(cvx.matrix(np.eye(self.moment_num**2)[:,inds.T.flatten()==1]))
         h = cvx.matrix(-A,tc='d')
         
         # Solve SDP
-        V_init = self.moment_varcov.copy()
-        V_init[np.isnan(V_init)]=0
-        sol = cvx.solvers.sdp(c,Gs=[G],hs=[h],dualstart={'zs': [cvx.matrix(V_init)]})
+        sol = cvx.solvers.sdp(c,Gs=[G],hs=[h])
         
         # Return objective value and optimal V
         return sol['dual objective'], sol['zs'][0]
