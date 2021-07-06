@@ -4,7 +4,7 @@ import scipy.optimize as opt
 import cvxopt as cvx
 from statsmodels.regression.quantile_regression import QuantReg
 from scipy.stats import chi2, norm
-from scipy.linalg import block_diag
+from scipy.linalg import block_diag, null_space
 
 
 """Worst-case standard errors for minimum distance estimates
@@ -297,7 +297,7 @@ class MinDist:
             aux = [self.moment_varcov_blocks['varcov'][i] \
                    @ loading_blocks[i]
                    for i in range(self.moment_varcov_blocks['num'])]
-            var_blocks = [loading_blocks[i] @ aux[i]
+            var_blocks = [max(loading_blocks[i] @ aux[i],1e-10) # Avoid exact zeros (when loadings are zero)
                           for i in range(self.moment_varcov_blocks['num'])]
             se = np.sqrt(var_blocks).sum()
             aux2 = [aux[i]/np.sqrt(var_blocks[i]) for i in range(self.moment_varcov_blocks['num'])]
@@ -325,11 +325,10 @@ class MinDist:
         """
         
         # Set up median regression as described in paper
+        (p,k) = moment_jacob.shape
         GpG = moment_jacob.T @ moment_jacob
         Y = moment_jacob @ np.linalg.solve(GpG, transf_jacob.reshape(-1,1))
-        val, vec = np.linalg.eig(np.eye(self.moment_num) - moment_jacob @ np.linalg.solve(GpG, moment_jacob.T))
-        (p,k) = moment_jacob.shape
-        moment_jacob_perp = vec[:, np.abs(val).argsort()[:p-k]]
+        moment_jacob_perp = null_space(moment_jacob.T)
         X = -moment_jacob_perp
         
         if self.diag_only: # Only diagonal is known
