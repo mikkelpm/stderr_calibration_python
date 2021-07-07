@@ -6,7 +6,8 @@ sys.path.insert(1,'../')
 from stderr_calibration import MinDist
 
 
-"""Tests of worst-case standard error functions
+"""Unit tests of minimum distance inference functions
+Intended for use with the "pytest" testing framework
 """
 
 
@@ -23,6 +24,32 @@ V_fullinfo = sigma.reshape(-1,1) * np.array([[1,0.5,0.5],[0.5,1,0.5],[0.5,0.5,1]
 V_blockdiag = V_fullinfo.copy()
 V_blockdiag[0,1:] = np.nan
 V_blockdiag[1:,0] = np.nan
+
+
+# Define test cases
+
+def test_closedform():
+    
+    """Test closed-form formulas
+    """
+    
+    obj = MinDist(h,mu,moment_se=sigma)
+    
+    # Estimation with default weight matrix
+    res = obj.fit(opt_init=np.array(np.zeros(theta.shape)), eff=False)
+    W = np.diag(1/sigma**2)
+    aux = np.linalg.solve(G.T @ W @ G, G.T @ W).T
+    np.testing.assert_allclose(res['moment_loadings'], aux)
+    np.testing.assert_allclose(res['transf_estim_se'], sigma @ np.abs(aux))
+    
+    # Efficient estimation (see formulas in paper appendix)
+    res_eff = obj.fit(opt_init=np.array(np.zeros(theta.shape)))
+    if sigma[0]*np.abs(G[1,0]*G[2,1]) <= sigma[1]*np.abs(G[0,0]*G[2,1])+sigma[2]*np.abs(G[0,0]*G[1,1]):
+        x = np.array([1/G[0,0], 0, 0])
+    else:
+        x = np.array([0, 1/G[1,0], -G[1,1]/(G[1,0]*G[2,1])])
+    np.testing.assert_allclose(x @ mu, res_eff['transf_estim'][0], rtol=1e-6)
+    np.testing.assert_allclose(abs(x) @ sigma, res_eff['transf_estim_se'][0], rtol=1e-6)
 
 
 def test_diag():
@@ -62,6 +89,11 @@ def test_diag():
         np.testing.assert_allclose(np.diag(res['worstcase_varcov'][i]), sigma**2)
     np.testing.assert_array_less(res_eff['transf_estim_se'], res['transf_estim_se'])
     
+    # Test that full optimization gives the same as one-step (due to linear moment function)
+    res2_eff = obj.fit(opt_init=np.zeros(theta.shape),one_step=False)
+    np.testing.assert_allclose(res_eff['transf_estim'], res2_eff['transf_estim'], rtol=1e-5)
+    np.testing.assert_allclose(res_eff['transf_estim_se'], res2_eff['transf_estim_se'], rtol=1e-5)
+    
     # Full information
     obj_fullinfo = MinDist(h,mu,moment_varcov=V_fullinfo)
     res_fullinfo, res_eff_fullinfo = run_tests(obj_fullinfo)
@@ -98,7 +130,7 @@ def test_blockdiag():
     
     np.testing.assert_array_less(res_eff['transf_estim_se'], res['transf_estim_se'])
     np.testing.assert_allclose(res['transf_estim_se'], res2['transf_estim_se'], rtol=1e-5)
-    np.testing.assert_allclose(res_eff['transf_estim_se'], res2_eff['transf_estim_se'], rtol=5e-2)
+    np.testing.assert_allclose(res_eff['transf_estim_se'], res2_eff['transf_estim_se'], rtol=3e-2)
     
 
 def test_highdim():
@@ -108,9 +140,9 @@ def test_highdim():
     """
 
     # Generate random high-dimensional problem with known block diagonal
-    np.random.seed(123) # Random seed
-    blocks_num = 4 # Number of blocks
+    blocks_num = 4 # Number of blocks; 1st block is 1x1, 2nd block is 2x2, etc.
     k = 4 # Number of parameters
+    np.random.seed(123) # Random seed
     G = np.random.randn(int(blocks_num*(blocks_num+1)/2),k)
     h = lambda x: x @ G.T
     mu = np.arange(k) @ G.T
