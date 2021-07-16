@@ -80,7 +80,7 @@ class MinDist:
     
     def fit(self, transf=lambda x: x, weight_mat=None,
             opt_init=None, estim_fct=None, eff=True, one_step=True, transf_deriv=None,
-            param_estim=None, transf_estim=None, transf_jacob=None, moment_fit=None, moment_jacob=None):
+            param_estim=None, estim=None, transf_jacob=None, moment_fit=None, moment_jacob=None):
         
         """Minimum distance estimates and standard errors,
         either with full-information moment var-cov matrix
@@ -108,12 +108,12 @@ class MinDist:
             param_estim = estim_fct(weight_mat)
         
         # Transformation, moment function, and Jacobians at initial estimate
-        transf_estim, transf_jacob, moment_fit, moment_jacob \
+        estim, transf_jacob, moment_fit, moment_jacob \
             = self.estim_update(param_estim, transf, transf_deriv,
-                                transf_estim=transf_estim, transf_jacob=transf_jacob,
+                                estim=estim, transf_jacob=transf_jacob,
                                 moment_fit=moment_fit, moment_jacob=moment_jacob)
         moment_loadings = self._get_moment_loadings(moment_jacob, weight_mat, transf_jacob)
-        transf_num = 1 if np.isscalar(transf_estim) else len(transf_estim)
+        estim_num = 1 if np.isscalar(estim) else len(estim)
         
         # Efficient estimates
         if eff:
@@ -122,64 +122,64 @@ class MinDist:
             
                 if one_step: # One-step estimation
                     param_estim = self._get_onestep(moment_fit, weight_mat, moment_jacob, param_estim)
-                    transf_estim, transf_jacob, moment_fit, moment_jacob = self.estim_update(param_estim, transf, transf_deriv)
+                    estim, transf_jacob, moment_fit, moment_jacob = self.estim_update(param_estim, transf, transf_deriv)
                 else: # Full optimization
                     # Do nothing, since param_estim already contains estimates of interest
                     pass
                 
             else: # Limited information
             
-                if transf_num > 1: # If more than one parameter of interest, handle each separately by recursive call
+                if estim_num > 1: # If more than one parameter of interest, handle each separately by recursive call
                 
-                    transf_estim_init = transf_estim.copy()
+                    estim_init = estim.copy()
                     ress = [self.fit(transf=lambda x: transf(x)[i],
                                            weight_mat=weight_mat,
                                            estim_fct=estim_fct,
                                            eff=True, one_step=one_step,
                                            param_estim=param_estim,
-                                           transf_estim=transf_estim_init[i],
+                                           estim=estim_init[i],
                                            transf_jacob=transf_jacob[i,:],
                                            moment_fit=moment_fit,
                                            moment_jacob=moment_jacob)
-                            for i in range(transf_num)] # Compute for each parameter of interest
-                    transf_estim = np.array([r['transf_estim'] for r in ress])
-                    transf_estim_se = np.array([r['transf_estim_se'] for r in ress])
+                            for i in range(estim_num)] # Compute for each parameter of interest
+                    estim = np.array([r['estim'] for r in ress])
+                    estim_se = np.array([r['estim_se'] for r in ress])
                     moment_loadings = np.array([r['moment_loadings'] for r in ress]).T
                     weight_mat = [r['weight_mat'] for r in ress]
                     
                 else: # If only single parameter of interest
                 
-                    transf_estim_se, moment_loadings, weight_mat = self.worstcase_eff(moment_jacob, transf_jacob, weight_mat=weight_mat)
+                    estim_se, moment_loadings, weight_mat = self.worstcase_eff(moment_jacob, transf_jacob, weight_mat=weight_mat)
                     if one_step: # One-step estimation
-                        transf_estim = self._get_onestep(moment_fit, None, moment_loadings, transf_estim).item()
+                        estim = self._get_onestep(moment_fit, None, moment_loadings, estim).item()
                     else: # Full optimization estimation
                         param_estim = estim_fct(weight_mat)
-                        transf_estim = transf(param_estim)
+                        estim = transf(param_estim)
         
         # Start building results dictionary
-        res = {'transf_estim': transf_estim,
+        res = {'estim': estim,
                'param_estim': param_estim,
                'weight_mat': weight_mat,
                'moment_fit': moment_fit,
                'moment_jacob': moment_jacob,
                'moment_loadings': moment_loadings,
                'transf_jacob': transf_jacob,
-               'transf_num': transf_num}
+               'estim_num': estim_num}
         
         # Standard errors
         if self.full_info: # Full information
-            transf_estim_varcov = moment_loadings.T @ self.moment_varcov @ moment_loadings
-            transf_estim_se = np.sqrt(np.diag(transf_estim_varcov))
-            res['transf_estim_varcov'] = transf_estim_varcov
+            estim_varcov = moment_loadings.T @ self.moment_varcov @ moment_loadings
+            estim_se = np.sqrt(np.diag(estim_varcov))
+            res['estim_varcov'] = estim_varcov
         else: # Limited information
             if eff:
                 # Do nothing, since standard errors have already been computed above
                 pass
             else:
-                transf_estim_se, worstcase_varcov = self.worstcase_se(moment_loadings)
+                estim_se, worstcase_varcov = self.worstcase_se(moment_loadings)
                 res['worstcase_varcov'] = worstcase_varcov
         
-        res['transf_estim_se'] = transf_estim_se
+        res['estim_se'] = estim_se
         
         return res
     
@@ -190,7 +190,9 @@ class MinDist:
         """
         
         # t-statistics
-        tstat = estim_res['transf_estim']/estim_res['transf_estim_se']
+        old_settings=np.seterr(divide='ignore')
+        tstat = estim_res['estim']/estim_res['estim_se']
+        np.seterr(**old_settings)
         tstat_pval = 2*norm.cdf(-np.abs(tstat))
         res = {'tstat': tstat,
                'tstat_pval': tstat_pval}
@@ -201,20 +203,20 @@ class MinDist:
         # Weight matrix for joint test statistic
         if test_weight_mat is None:
             if self.full_info: # Full information
-                test_weight_mat = np.linalg.inv(estim_res['transf_estim_varcov'])
+                test_weight_mat = np.linalg.inv(estim_res['estim_varcov'])
             else: # Limited information
                 # Ad hoc choice motivated by independence
                 test_weight_mat = np.linalg.inv(estim_res['moment_loadings'].T @ np.diag(np.diag(self.moment_varcov)) @ estim_res['moment_loadings'])
         
         # Check dimensions
-        assert test_weight_mat.shape == (estim_res['transf_num'],estim_res['transf_num']), 'Dimension of "test_weight_mat" is wrong'
+        assert test_weight_mat.shape == (estim_res['estim_num'],estim_res['estim_num']), 'Dimension of "test_weight_mat" is wrong'
         
         # Test statistic
-        joint_stat = estim_res['transf_estim'] @ test_weight_mat @ estim_res['transf_estim']
+        joint_stat = estim_res['estim'] @ test_weight_mat @ estim_res['estim']
         
         # p-value
         if self.full_info:
-            joint_pval = 1-chi2.cdf(joint_stat, estim_res['transf_num'])
+            joint_pval = 1-chi2.cdf(joint_stat, estim_res['estim_num'])
         else:
             max_trace, max_trace_varcov = self.solve_sdp(estim_res['moment_loadings'] @ test_weight_mat @ estim_res['moment_loadings'].T)
             joint_pval = 1-chi2.cdf(joint_stat/max_trace, 1)
@@ -248,7 +250,7 @@ class MinDist:
                                  eff=False,
                                  weight_mat=np.eye(self.moment_num),
                                  param_estim=estim_res['param_estim'],
-                                 transf_estim=moment_error,
+                                 estim=moment_error,
                                  transf_jacob=M,
                                  moment_fit=self.moment_estim,
                                  moment_jacob=np.eye(self.moment_num))
@@ -261,7 +263,7 @@ class MinDist:
         the_test_res = self.test(the_estim_res, joint=joint, test_weight_mat=estim_res['weight_mat'])
         
         res = {'moment_error': moment_error,
-               'moment_error_se': the_estim_res['transf_estim_se'],
+               'moment_error_se': the_estim_res['estim_se'],
                'tstat': the_test_res['tstat'],
                'tstat_pval': the_test_res['tstat_pval']}
         
@@ -399,22 +401,22 @@ class MinDist:
     
     
     def estim_update(self, param_estim, transf, transf_deriv,
-                     transf_estim=None, transf_jacob=None, moment_fit=None, moment_jacob=None):
+                     estim=None, transf_jacob=None, moment_fit=None, moment_jacob=None):
             
             """Update estimated parameter transformation and moments,
             including their Jacobians.
             Avoids recomputing quantities if they're already supplied.
             """
             
-            if transf_estim is None:
-                transf_estim = transf(param_estim)
+            if estim is None:
+                estim = transf(param_estim)
             if transf_jacob is None:
                 transf_jacob = transf_deriv(param_estim)
             if moment_fit is None:
                 moment_fit = self.moment_fct(param_estim)
             if moment_jacob is None:
                 moment_jacob = self.moment_fct_deriv(param_estim)
-            return transf_estim, transf_jacob, moment_fit, moment_jacob
+            return estim, transf_jacob, moment_fit, moment_jacob
     
     
     def _get_onestep(self, moment_init, weight_mat, moment_jacob, param_init):
