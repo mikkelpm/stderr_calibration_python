@@ -12,13 +12,11 @@ Tested in: Python 3.8.8 on Windows 10 PC
 
 ## Contents
 
-**[stderr_calibration](stderr_calibration):** Python package for minimum distance estimation, standard errors, and testing
+- [example.ipynb](example.ipynb): Simple interactive example in Jupyter Notebook illustrating the main functionality of the package (also available in [HTML](docs/example.html) format)
 
-**[tests](tests):** unit tests intended for use with the [pytest](https://docs.pytest.org/) framework
+- [stderr_calibration](stderr_calibration): Python package for minimum distance estimation, standard errors, and testing
 
-## Example
-
-A simple example illustrating all the basic functionality of the package is available in [Jupyter Notebooks](example.ipynb) or [HTML](example.html) format.
+- [tests](tests): Unit tests intended for use with the [pytest](https://docs.pytest.org/) framework
 
 ## Acknowledgements
 
