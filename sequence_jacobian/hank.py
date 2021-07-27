@@ -10,7 +10,7 @@ from .simple_block import simple
 
 
 @het(exogenous='Pi', policy='a', backward='Va')
-def household(Va_p, Pi_p, a_grid, e_grid, T, w, r, beta, eis, frisch, vphi, c_const, n_const, ssflag=False):
+def household(Va_p, Pi_p, a_grid, e_grid, T, w, r, Y, beta, eis, frisch, vphi, c_const, n_const, ssflag=False):
     """Single backward iteration step using endogenous gridpoint method for households with separable CRRA utility."""
     # this one is useful to do internally
     ws = w * e_grid
@@ -47,8 +47,11 @@ def household(Va_p, Pi_p, a_grid, e_grid, T, w, r, beta, eis, frisch, vphi, c_co
 
     # efficiency units of labor which is what really matters
     ns = e_grid[:, np.newaxis] * n
+    
+    # indicator for earning less than 2/3 of per capita GDP
+    earn_lt_gdp = (w*ns<=Y*2/3).astype(int)
 
-    return Va, a, c, n, ns
+    return Va, a, c, n, ns, earn_lt_gdp
 
 
 @njit
@@ -179,7 +182,7 @@ def hank_ss(beta_guess=0.986, vphi_guess=0.8, r=0.005, eis=0.5, frisch=0.5, mu=1
         c_const_loc, n_const_loc = solve_cn(w * e_grid[:, np.newaxis], fininc, eis, frisch, vphi_loc, Va)
         if beta_loc > 0.999 / (1 + r) or vphi_loc < 0.001:
             raise ValueError('Clearly invalid inputs')
-        out = household_trans.ss(Va=Va, Pi=Pi, a_grid=a_grid, e_grid=e_grid, pi_e=pi_e, w=w, r=r, beta=beta_loc,
+        out = household_trans.ss(Va=Va, Pi=Pi, a_grid=a_grid, e_grid=e_grid, pi_e=pi_e, w=w, r=r, Y=1, beta=beta_loc,
                                  eis=eis, Div=Div, Tax=Tax, frisch=frisch, vphi=vphi_loc,
                                  c_const=c_const_loc, n_const=n_const_loc, tax_rule=tax_rule, div_rule=div_rule,
                                  ssflag=True)
@@ -190,7 +193,7 @@ def hank_ss(beta_guess=0.986, vphi_guess=0.8, r=0.005, eis=0.5, frisch=0.5, mu=1
 
     # extra evaluation for reporting
     c_const, n_const = solve_cn(w * e_grid[:, np.newaxis], fininc, eis, frisch, vphi, Va)
-    ss = household_trans.ss(Va=Va, Pi=Pi, a_grid=a_grid, e_grid=e_grid, pi_e=pi_e, w=w, r=r, beta=beta, eis=eis,
+    ss = household_trans.ss(Va=Va, Pi=Pi, a_grid=a_grid, e_grid=e_grid, pi_e=pi_e, w=w, r=r, Y=1, beta=beta, eis=eis,
                             Div=Div, Tax=Tax, frisch=frisch, vphi=vphi, c_const=c_const, n_const=n_const,
                             tax_rule=tax_rule, div_rule=div_rule, ssflag=True)
     
