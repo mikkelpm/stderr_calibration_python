@@ -5,10 +5,7 @@ Python package that computes worst-case standard errors (SE) for minimum distanc
 **Reference:**
 Cocci, Matthew D., and Mikkel Plagborg-Møller (2021), "Standard Errors for Calibrated Parameters", https://scholar.princeton.edu/mikkelpm/calibration
 
-**Requirements:**
-The Python packages [cvxopt](https://cvxopt.org/) and [numdifftools](https://pypi.org/project/numdifftools/) are required.
-
-Tested in: Python 3.8.8 on Windows 10 PC
+Tested in: Python 3.8.8 (Anaconda distribution) on Windows 10 PC
 
 ## Contents
 
@@ -17,6 +14,10 @@ Tested in: Python 3.8.8 on Windows 10 PC
 - [stderr_calibration](stderr_calibration): Python package for minimum distance estimation, standard errors, and testing
 
 - [tests](tests): Unit tests intended for use with the [pytest](https://docs.pytest.org/) framework
+
+## Requirements
+
+The Python packages [cvxopt](https://cvxopt.org/) and [numdifftools](https://pypi.org/project/numdifftools/) are required.
 
 ## Acknowledgements
 
