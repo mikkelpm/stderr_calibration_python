@@ -3,6 +3,7 @@ import scipy.optimize as opt
 from scipy.stats import norm
 from scipy.signal import lfilter
 from pandas import read_csv
+import matplotlib.pyplot as plt
 from sequence_jacobian import hank
 import sequence_jacobian.jacobian as jac
 from stderr_calibration import MinDist
@@ -202,3 +203,55 @@ print('Over-ID t-stats:')
 print(res_overid['tstat'])
 print('Joint p-value:')
 print(res_overid['joint_pval'])
+
+
+"""Part 7: Plot IRFs
+"""
+
+# Compute all IRFs
+h_max = 12
+irf_z, irf_mp = get_irf(*param_estim, np.arange(h_max+1), ss, T)
+
+# Plotting function
+def my_plot(fig, plot_num, irf, horzs, data, moment_error, title):
+    signif = 0.1
+    ax = fig.add_subplot(2,3,plot_num)
+    all_horzs = np.arange(len(irf))
+    ax.plot(all_horzs, irf, label='Model')
+    ax.errorbar(horzs, data, yerr=norm.ppf(1-signif/2)*moment_error,
+                fmt='o', capsize=2.0, label='Data')
+    ax.set_title(title, fontsize=10, fontweight='bold')
+    plt.xticks(np.arange(0,len(irf)+1,4))
+
+# Draw figures
+nh = len(horzs)
+plt.rcParams['font.size'] = '8'
+fig = plt.figure()
+
+my_plot(fig, 1, irf_z['Z'], horzs, irf_z_data['TFP'], res_overid['moment_error_se'][:nh],
+        'TFP')
+plt.ylabel('TFP shock', fontsize=10, fontweight='bold')
+
+my_plot(fig, 2, irf_z['Y'], horzs, irf_z_data['GDP'], res_overid['moment_error_se'][nh:2*nh],
+        'Output')
+
+my_plot(fig, 3, 100*irf_z['PctBelowGDP'], horzs, 100*irf_z_data['BelowCutoff'], 100*res_overid['moment_error_se'][-nh:],
+        '% Earn < GDP')
+
+my_plot(fig, 4, irf_mp['Y'], horzs, irf_mp_data['INDPRO'], res_overid['moment_error_se'][2*nh:3*nh],
+        'Output')
+plt.ylabel('MP shock', fontsize=10, fontweight='bold')
+
+my_plot(fig, 5, irf_mp['P'], horzs, irf_mp_data['CPIAUCSL'], res_overid['moment_error_se'][3*nh:4*nh],
+        'Price Level')
+
+my_plot(fig, 6, irf_mp['R1Y'], horzs, irf_mp_data['GS1'], np.insert(res_overid['moment_error_se'][4*nh:5*nh-1],0,0),
+        '1-Year Bond Rate')
+plt.legend()
+
+fig.tight_layout()
+plt.draw()
+
+# Save figure
+plt.savefig('irf.png', dpi=200)
+plt.savefig('irf.eps', format='eps')
