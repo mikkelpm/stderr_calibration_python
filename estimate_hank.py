@@ -36,6 +36,8 @@ for v in ['TFP','GDP','BelowCutoff']:
     irf_z_data[v+'_se'] = (data_ccs[v+'_IRF_q90'].values[1:][horzs]-data_ccs[v+'_IRF_q10'].values[1:][horzs])/3/(2*norm.ppf(0.9))
 # Note: norm.ppf(0.9) is due to the paper reporting 80% credible bands
 # We divide by 3 so we get 1 s.d. TFP shock
+irf_z_data['BelowCutoff'] *= 100 # Change units to percentage points
+irf_z_data['BelowCutoff_se'] *= 100
 
 # MP shock (Miranda-Agrippino & Ricco, 2021, Figure 3)
 data_mar = read_csv('data/mirandaagrippino_ricco.csv')
@@ -88,7 +90,7 @@ def get_irf(phi, kappa, ar_z, ma_z, sigma_z, ar_mp, ma_mp, horzs, ss, T):
     dPctBelowGDP_dz = dz @ G['EARN_LT_GDP']['Z'][horzs,:].T # IRF of fraction of people earning less than GDP
     irf_z = {'Z': 100 * dz[horzs] / ss['Z'], # IRF of log TFP
              'Y': 100 * dY_dz,
-             'PctBelowGDP': dPctBelowGDP_dz}
+             'PctBelowGDP': 100 * dPctBelowGDP_dz}
     
     # MP shock responses
     dmp = lfilter([1,ma_mp],[1,-ar_mp],np.insert(np.zeros(T-1),0,1)) # ARMA(1,1) shock to Taylor rule
@@ -105,53 +107,34 @@ def get_irf(phi, kappa, ar_z, ma_z, sigma_z, ar_mp, ma_mp, horzs, ss, T):
     return irf_z, irf_mp
 
 
-"""Part 3: Minimum distance estimation from macro data
+"""Part 3: Minimum distance estimation
 """
 
-# Macro moments
-moment_macro = np.hstack((irf_z_data['TFP'],irf_z_data['GDP'],
-                          irf_mp_data['INDPRO'],irf_mp_data['CPIAUCSL'],irf_mp_data['GS1'][1:]))
-moment_macro_se = np.hstack((irf_z_data['TFP_se'],irf_z_data['GDP_se'],
-                             irf_mp_data['INDPRO_se'],irf_mp_data['CPIAUCSL_se'],irf_mp_data['GS1_se'][1:]))
-moment_macro_num = len(moment_macro)
-
-# Micro moments
-moment_micro = irf_z_data['BelowCutoff']
-moment_micro_se = irf_z_data['BelowCutoff_se']
-moment_micro_num = len(moment_micro)
-
 # Stack all moments
-moment = np.hstack((moment_macro, moment_micro))
-moment_se = np.hstack((moment_macro_se, moment_micro_se))
+moment = np.hstack((irf_z_data['TFP'],irf_z_data['GDP'],irf_z_data['BelowCutoff'],
+                    irf_mp_data['INDPRO'],irf_mp_data['CPIAUCSL'],irf_mp_data['GS1'][1:]))
+moment_se = np.hstack((irf_z_data['TFP_se'],irf_z_data['GDP_se'],irf_z_data['BelowCutoff_se'],
+                       irf_mp_data['INDPRO_se'],irf_mp_data['CPIAUCSL_se'],irf_mp_data['GS1_se'][1:]))
 moment_num = len(moment)
 
 
-def moment_fct(theta, horzs, ss, T):
+def moment_fct(theta):
     
     """Model-implied moment function
     """
     
     (phi, kappa, ar_z, ma_z, sigma_z, ar_mp, ma_mp) = tuple(theta)
     irf_z, irf_mp = get_irf(phi, kappa, ar_z, ma_z, sigma_z, ar_mp, ma_mp, horzs, ss, T)
-    return np.hstack((irf_z['Z'],irf_z['Y'],irf_mp['Y'],irf_mp['P'],irf_mp['R1Y'][1:],irf_z['PctBelowGDP']))
+    return np.hstack((irf_z['Z'],irf_z['Y'],irf_z['PctBelowGDP'],irf_mp['Y'],irf_mp['P'],irf_mp['R1Y'][1:]))
 
 
-def mindist_obj(theta, moment, horzs, ss, T):
-    
-    """Minimum distance objective function
-    """
-    
-    quadf = lambda a: a @ weight_mat_macro @ a
-    return quadf(moment-moment_fct(theta,horzs,ss,T))
-    
-
-# Estimation using only macro moments
-weight_mat_macro = np.diag(np.hstack((1/moment_macro_se**2,np.zeros(moment_micro_num)))) # Weight matrix (zeros on micro moments)
+# Estimation using diagonal weight matrix
 param_bounds = [(1,np.inf),(-np.inf,np.inf),(-1,1),(-np.inf,np.inf),(0,np.inf),(-1,1),(-np.inf,np.inf)] # Parameter bounds
 param_init = np.array([1.5,0.01,0.95,0,irf_z_data['TFP'][0]/100,0.5,0]) # Initial parameter guess
+quadf = lambda a: np.sum((a/moment_se)**2)
 
 print('Running numerical optimization for macro-only estimation...')
-opt_res = opt.minimize(lambda theta: mindist_obj(theta, moment, horzs, ss, T),
+opt_res = opt.minimize(lambda theta: quadf(moment-moment_fct(theta)),
                        param_init,
                        method='L-BFGS-B',
                        bounds=param_bounds,
@@ -164,13 +147,13 @@ print(opt_res['message'])
 
 
 #Standard errors
-obj = MinDist(lambda theta: moment_fct(theta, horzs, ss, T), moment, moment_se=moment_se)
+obj = MinDist(moment_fct, moment, moment_se=moment_se)
 print('Computing standard errors...')
-res = obj.fit(param_estim=param_estim, weight_mat=weight_mat_macro, eff=False)
+res = obj.fit(param_estim=param_estim, weight_mat=np.diag(1/moment_se**2), eff=False)
 print('Done.')
 
 
-"""Part 4: Over-ID test using micro data
+"""Part 4: Over-ID test
 """
 
 res_overid = obj.overid(res)
@@ -180,16 +163,17 @@ res_overid = obj.overid(res)
 """
 
 res_eff = obj.fit(param_estim=param_estim, moment_jacob=res['moment_jacob'], eff=True)
+nonzero_loadings = abs(res_eff['moment_loadings'])>=1e-4; # (Effectively) non-zero moment loadings
 
 
 """Part 6: Print output
 """
 
-print('Parameter estimates (macro only):')
+print('Parameter estimates (diagonal W):')
 print(np.array_str(res['estim'], precision=3, suppress_small=True))
-print('Worst-case standard errors (macro only):')
+print('Worst-case standard errors (diagonal W):')
 print(np.array_str(res['estim_se'], precision=3, suppress_small=True))
-print('t-stats (macro only):')
+print('t-stats (diagonal W):')
 print(np.array_str(res['estim']/res['estim_se'], precision=3, suppress_small=True))
 
 print('Parameter estimates (efficient):')
@@ -203,6 +187,9 @@ print('Over-ID t-stats:')
 print(res_overid['tstat'])
 print('Joint p-value:')
 print(res_overid['joint_pval'])
+
+print('Non-zero moment loadings (efficient):')
+print(nonzero_loadings.astype(int))
 
 
 """Part 7: Plot IRFs
@@ -235,17 +222,17 @@ plt.ylabel('TFP shock', fontsize=10, fontweight='bold')
 my_plot(fig, 2, irf_z['Y'], horzs, irf_z_data['GDP'], res_overid['moment_error_se'][nh:2*nh],
         'Output')
 
-my_plot(fig, 3, 100*irf_z['PctBelowGDP'], horzs, 100*irf_z_data['BelowCutoff'], 100*res_overid['moment_error_se'][-nh:],
+my_plot(fig, 3, irf_z['PctBelowGDP'], horzs, irf_z_data['BelowCutoff'], res_overid['moment_error_se'][2*nh:3*nh],
         '% Earn < GDP')
 
-my_plot(fig, 4, irf_mp['Y'], horzs, irf_mp_data['INDPRO'], res_overid['moment_error_se'][2*nh:3*nh],
+my_plot(fig, 4, irf_mp['Y'], horzs, irf_mp_data['INDPRO'], res_overid['moment_error_se'][3*nh:4*nh],
         'Output')
 plt.ylabel('MP shock', fontsize=10, fontweight='bold')
 
-my_plot(fig, 5, irf_mp['P'], horzs, irf_mp_data['CPIAUCSL'], res_overid['moment_error_se'][3*nh:4*nh],
+my_plot(fig, 5, irf_mp['P'], horzs, irf_mp_data['CPIAUCSL'], res_overid['moment_error_se'][4*nh:5*nh],
         'Price Level')
 
-my_plot(fig, 6, irf_mp['R1Y'], horzs, irf_mp_data['GS1'], np.insert(res_overid['moment_error_se'][4*nh:5*nh-1],0,0),
+my_plot(fig, 6, irf_mp['R1Y'], horzs, irf_mp_data['GS1'], np.insert(res_overid['moment_error_se'][5*nh:],0,0),
         '1-Year Bond Rate')
 plt.legend()
 
