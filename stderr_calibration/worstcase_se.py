@@ -269,7 +269,9 @@ class MinDist:
         
         if joint:
             res.update({'joint_stat': the_test_res['joint_stat'],
-                        'joint_pval': the_test_res['joint_pval']})
+                        'joint_pval': the_test_res['joint_pval'],
+                        'max_trace': the_test_res['max_trace'],
+                        'max_trace_varcov': the_test_res['max_trace_varcov']})
             if self.full_info: # Adjust degrees of freedom
                 res['joint_pval'] = 1-chi2.cdf(the_test_res['joint_stat'], self.moment_num-len(estim_res['param_estim']))
     

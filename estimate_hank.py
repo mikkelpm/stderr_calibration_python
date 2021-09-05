@@ -26,7 +26,7 @@ print('Done.')
 """Part 1b: Empirical moments (impulse responses)
 """
 
-horzs = [0,4,8] # Response horizons (quarters after shock)
+horzs = [0,2,4] # Response horizons (quarters after shock)
 
 # TFP shock (Chang, Chen & Schorfheide, 2021, Figures 7 and 9)
 data_ccs = read_csv('data/chang_chen_schorfheide.csv')
