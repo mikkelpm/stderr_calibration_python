@@ -48,7 +48,7 @@ def household(Va_p, Pi_p, a_grid, e_grid, T, w, r, Y, beta, eis, frisch, vphi, c
     # efficiency units of labor which is what really matters
     ns = e_grid[:, np.newaxis] * n
     
-    # indicator for earning less than 2/3 of per capita GDP
+    # indicator for earning less than 2/3 of per capita GDP (LINE ADDED BY MPM)
     earn_lt_gdp = (w*ns<=Y*2/3).astype(int)
 
     return Va, a, c, n, ns, earn_lt_gdp

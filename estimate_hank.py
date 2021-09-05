@@ -56,7 +56,7 @@ T = 300 # Time horizon for equilibrium calculations
 
 # Compute Jacobian of household block once and for all (only depends on non-estimated parameters)
 print('Computing Jacobian of household block...')
-J_ha = jac.get_G([hank.household_trans], ['r', 'w', 'Y'], [], [], T, ss, save=True)
+J_ha = jac.get_G([hank.household_trans], ['r', 'w', 'Y', 'Div', 'Tax'], [], [], T, ss, save=True)
 ss.update({'J_ha': J_ha})
 print('Done.')
 
@@ -131,10 +131,9 @@ def moment_fct(theta):
 # Estimation using diagonal weight matrix
 param_bounds = [(1,np.inf),(-np.inf,np.inf),(-1,1),(-np.inf,np.inf),(0,np.inf),(-1,1),(-np.inf,np.inf)] # Parameter bounds
 param_init = np.array([1.5,0.01,0.95,0,irf_z_data['TFP'][0]/100,0.5,0]) # Initial parameter guess
-quadf = lambda a: np.sum((a/moment_se)**2)
 
-print('Running numerical optimization for macro-only estimation...')
-opt_res = opt.minimize(lambda theta: quadf(moment-moment_fct(theta)),
+print('Running numerical optimization for diagonal weight matrix...')
+opt_res = opt.minimize(lambda theta: np.sum(((moment-moment_fct(theta))/moment_se)**2),
                        param_init,
                        method='L-BFGS-B',
                        bounds=param_bounds,
