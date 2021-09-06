@@ -17,7 +17,7 @@ Tested in: Python 3.8.8 (Anaconda distribution) on Windows 10 PC
 
 - [estimate_hank.py](estimate_hank.py): Empirical application to estimation of a heterogeneous agent New Keynesian macro model, using impulse response estimates from [Chang, Chen & Schorfheide (2021)](https://cpb-us-w2.wpmucdn.com/web.sas.upenn.edu/dist/e/242/files/2021/05/EvalHAmodels_v6_pub.pdf) and [Miranda-Agrippino & Ricco (2021)](https://doi.org/10.1257/mac.20180124), which are stored in the [data](data) folder
 
-- [sequence_jacobian](sequence_jacobian): Copy of the [Sequence-Space Jacobian](https://github.com/shade-econ/sequence-jacobian) package developed by [Auclert, Bardóczy, Rognlie & Straub (2021)](http://web.stanford.edu/~aauclert/sequence_space_jacobian.pdf)
+- [sequence_jacobian](sequence_jacobian): Copy of the [Sequence-Space Jacobian](https://github.com/shade-econ/sequence-jacobian) package developed by [Auclert, Bardóczy, Rognlie & Straub (2021)](http://web.stanford.edu/~aauclert/sequence_space_jacobian.pdf), with minor changes made to the file [hank.py](sequence_jacobian/hank.py)
 
 - [tests](tests): Unit tests intended for use with the [pytest](https://docs.pytest.org/) framework
 
