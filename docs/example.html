@@ -14296,8 +14296,8 @@ t-statistic
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Efficient weight matrix for estimating theta_</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">res_eff</span><span class="p">[</span><span class="s1">&#39;weight_mat&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Efficient moment loadings for estimating theta_</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">res_eff</span><span class="p">[</span><span class="s1">&#39;moment_loadings&#39;</span><span class="p">][:,</span><span class="n">i</span><span class="p">])</span>
 </pre></div>
 
      </div>
@@ -14323,14 +14323,10 @@ Efficient standard errors
 [0.10000031 0.02500014]
 
 
-Efficient weight matrix for estimating theta_1
-[[100.   0.   0.]
- [  0.  25.   0.]
- [  0.   0.   0.]]
-Efficient weight matrix for estimating theta_2
-[[  0.   0.   0.]
- [  0.  25.   0.]
- [  0.   0. 400.]]
+Efficient moment loadings for estimating theta_1
+[ 9.99997538e-01  2.46153846e-06 -1.23076923e-06]
+Efficient moment loadings for estimating theta_2
+[-5.00000082e-07  5.00000082e-07  4.99999750e-01]
 </pre>
 </div>
 </div>
@@ -14342,8 +14338,8 @@ Efficient weight matrix for estimating theta_2
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>We see that $\theta_1$ is estimated off the 1st and 2nd moments only, while $\theta_2$ is estimated off the 2nd and 3rd moments only.</p>
-<p>(Note: As shown above, the efficient estimates are not based on a single choice of weight matrix, since the efficient weight matrix depends on the specific parameter of interest. In the background, the analysis is actually run separately for each parameter. For this reason, it is not advised to use the <code>test()</code> or <code>overid()</code> commands with efficient estimation results. These commands are better used with estimation results that correspond to a single choice of weight matrix.)</p>
+<p>We see that $\theta_1$ is estimated off the 1st moment only, while $\theta_2$ is estimated off the 3rd moment only (up to small numerical error).</p>
+<p>(Note: The efficient estimates are not based on a single choice of weight matrix, since the efficient weight matrix depends on the specific parameter of interest. In the background, the analysis is actually run separately for each parameter. For this reason, it is not advised to use the <code>test()</code> or <code>overid()</code> commands with efficient estimation results. These commands are better used with estimation results that correspond to a single choice of weight matrix.)</p>
 
 </div>
 </div>
