@@ -124,6 +124,7 @@ class MinDist:
                 if one_step: # One-step estimation
                     param_estim = self._get_onestep(moment_fit, weight_mat, moment_jacob, param_estim)
                     estim, transf_jacob, moment_fit, moment_jacob = self.estim_update(param_estim, transf, transf_deriv)
+                    moment_loadings = self._get_moment_loadings(moment_jacob, weight_mat, transf_jacob)
                 else: # Full optimization
                     # Do nothing, since param_estim already contains estimates of interest
                     pass
@@ -202,8 +203,6 @@ class MinDist:
         if not joint:
             return res
         
-        assert (not self.full_info) or estim_res['eff'], 'Full-information joint test requires using the efficient weight matrix'
-        
         # Weight matrix for joint test statistic
         if test_weight_mat is None:
             if self.full_info: # Full information
@@ -264,7 +263,6 @@ class MinDist:
         '''
         
         # Test statistic and p-value
-        the_estim_res['eff'] = True # Trick test() function below into not throwing an error in full-info case
         the_test_res = self.test(the_estim_res, joint=joint, test_weight_mat=estim_res['weight_mat'])
         
         res = {'moment_error': moment_error,
