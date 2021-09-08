@@ -69,16 +69,14 @@ def test_diag():
         
         # Test output
         test_res = obj.test(res)
-        np.testing.assert_array_less(-test_res['tstat'], 0)
-        assert test_res['joint_stat']>0
+        assert test_res['joint_stat']>=0
         overid_res = obj.overid(res)
         np.testing.assert_allclose(overid_res['moment_error'], 0, atol=1e-7)
-        np.testing.assert_array_less(-overid_res['tstat'], 0)
-        assert overid_res['joint_stat']>0
+        assert overid_res['joint_stat']>=0
         
         # Efficient estimation
         res_eff = obj.fit(opt_init=np.zeros(theta.shape))
-        np.testing.assert_allclose(res['estim'], theta)
+        np.testing.assert_allclose(res_eff['estim'], theta)
         
         return res, res_eff
     
@@ -97,7 +95,6 @@ def test_diag():
     # Full information
     obj_fullinfo = MinDist(h,mu,moment_varcov=V_fullinfo)
     res_fullinfo, res_eff_fullinfo = run_tests(obj_fullinfo)
-    
     np.testing.assert_array_less(res_fullinfo['estim_se'], res['estim_se'])
     np.testing.assert_array_less(res_eff_fullinfo['estim_se'], res_eff['estim_se'])
 

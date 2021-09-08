@@ -96,6 +96,7 @@ class MinDist:
         # Determine weight matrix, if not supplied
         if self.full_info and (eff or (weight_mat is None)):
             weight_mat = np.linalg.inv(self.moment_varcov) # Full-info efficient weight matrix
+            eff = True
         if weight_mat is None:
             weight_mat = np.diag(1/np.diag(self.moment_varcov)) # Ad hoc diagonal weight matrix
         
