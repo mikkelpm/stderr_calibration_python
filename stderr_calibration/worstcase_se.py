@@ -164,6 +164,7 @@ class MinDist:
                'moment_jacob': moment_jacob,
                'moment_loadings': moment_loadings,
                'transf_jacob': transf_jacob,
+               'eff': eff,
                'estim_num': estim_num}
         
         # Standard errors
@@ -200,6 +201,8 @@ class MinDist:
         if not joint:
             return res
         
+        assert (not self.full_info) or estim_res['eff'], 'Full-information joint test requires using the efficient weight matrix'
+        
         # Weight matrix for joint test statistic
         if test_weight_mat is None:
             if self.full_info: # Full information
@@ -215,9 +218,9 @@ class MinDist:
         joint_stat = estim_res['estim'] @ test_weight_mat @ estim_res['estim']
         
         # p-value
-        if self.full_info:
+        if self.full_info: # Full information
             joint_pval = 1-chi2.cdf(joint_stat, estim_res['estim_num'])
-        else:
+        else: # Limited information
             max_trace, max_trace_varcov = self.solve_sdp(estim_res['moment_loadings'] @ test_weight_mat @ estim_res['moment_loadings'].T)
             joint_pval = 1-chi2.cdf(joint_stat/max_trace, 1)
             if joint_pval>0.215: # Test can only be used at significance levels < 0.215
@@ -260,6 +263,7 @@ class MinDist:
         '''
         
         # Test statistic and p-value
+        the_estim_res['eff'] = True # Trick test() function below into not throwing an error in full-info case
         the_test_res = self.test(the_estim_res, joint=joint, test_weight_mat=estim_res['weight_mat'])
         
         res = {'moment_error': moment_error,
@@ -271,6 +275,7 @@ class MinDist:
             res.update({'joint_stat': the_test_res['joint_stat'],
                         'joint_pval': the_test_res['joint_pval']})
             if self.full_info: # Adjust degrees of freedom
+                assert estim_res['eff'], 'Full-information joint test requires using the efficient weight matrix'
                 res['joint_pval'] = 1-chi2.cdf(the_test_res['joint_stat'], self.moment_num-len(estim_res['param_estim']))
             else:
                 res.update({'max_trace': the_test_res['max_trace'],
@@ -349,7 +354,10 @@ class MinDist:
             
             # Weight matrix puts weight on only k moments
             sort_inds = np.abs(moment_loadings).argsort()
-            weight_mat_new = weight_mat.copy()
+            if weight_mat is not None:
+                weight_mat_new = weight_mat.copy()
+            else:
+                weight_mat_new = np.eye(p)
             weight_mat_new[sort_inds[:p-k],:] = 0
             weight_mat_new[:,sort_inds[:p-k]] = 0
             
