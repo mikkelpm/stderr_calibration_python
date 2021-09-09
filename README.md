@@ -9,6 +9,8 @@ Cocci, Matthew D., and Mikkel Plagborg-Møller (2021), "Standard Errors for Cali
 
 Tested in: Python 3.8.8 (Anaconda distribution) on Windows 10 PC
 
+Other versions: [Matlab](https://github.com/mikkelpm/stderr_calibration_matlab)
+
 ## Contents
 
 - [example.ipynb](example.ipynb): Simple interactive example in Jupyter Notebook illustrating the main functionality of the package (also available in [HTML](docs/example.html) format)
