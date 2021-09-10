@@ -182,6 +182,9 @@ print(np.array_str(res_eff['estim_se'], precision=3, suppress_small=True))
 print('t-stats (efficient):')
 print(np.array_str(res_eff['estim']/res_eff['estim_se'], precision=3, suppress_small=True))
 
+print('% reduction in standard errors caused by efficient weighting')
+print(np.array_str(1-res_eff['estim_se']/res['estim_se'], precision=3, suppress_small=True))
+
 print('Over-ID t-stats:')
 print(res_overid['tstat'])
 print('Joint p-value:')
