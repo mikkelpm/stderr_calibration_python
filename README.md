@@ -7,7 +7,7 @@ The computed worst-case SE for the estimated parameters are sharp upper bounds o
 **Reference:**
 Cocci, Matthew D., and Mikkel Plagborg-Møller (2021), "Standard Errors for Calibrated Parameters", https://scholar.princeton.edu/mikkelpm/calibration
 
-Tested in: Python 3.8.8 (Anaconda distribution) on Windows 10 PC
+Tested in: Python 3.8.11 (Anaconda distribution) on Windows 10 PC
 
 Other versions: [Matlab](https://github.com/mikkelpm/stderr_calibration_matlab)
 
