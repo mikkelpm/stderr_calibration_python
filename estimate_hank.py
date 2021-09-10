@@ -26,7 +26,7 @@ print('Done.')
 """Part 1b: Empirical moments (impulse responses)
 """
 
-horzs = [0,2,4] # Response horizons (quarters after shock)
+horzs = [0,1,2,8] # Response horizons (quarters after shock)
 
 # TFP shock (Chang, Chen & Schorfheide, 2021, Figures 7 and 9)
 data_ccs = read_csv('data/chang_chen_schorfheide.csv')
@@ -76,7 +76,7 @@ def get_jacob(phi, kappa, ss, T):
     return G
     
 
-def get_irf(phi, kappa, ar_z, ma_z, sigma_z, ar_mp, ma_mp, horzs, ss, T):
+def get_irf(phi, kappa, ar1_z, ar2_z, sigma_z, ar1_mp, ar2_mp, horzs, ss, T):
     
     """Get impulse response functions of interest
     """
@@ -85,7 +85,7 @@ def get_irf(phi, kappa, ar_z, ma_z, sigma_z, ar_mp, ma_mp, horzs, ss, T):
     G = get_jacob(phi, kappa, ss, T)
     
     # TFP shock responses
-    dz = ss['Z'] * lfilter([1,ma_z],[1,-ar_z],np.insert(np.zeros(T-1),0,sigma_z)) # ARMA(1,1) shock to TFP
+    dz = ss['Z'] * np.cumsum(lfilter([1],[1,-ar1_z,-ar2_z],np.insert(np.zeros(T-1),0,sigma_z))) # AR(2) shock to TFP growth
     dY_dz = dz @ G['Y']['Z'][horzs,:].T / ss['Y'] # IRF of log output
     dPctBelowGDP_dz = dz @ G['EARN_LT_GDP']['Z'][horzs,:].T # IRF of fraction of people earning less than GDP
     irf_z = {'Z': 100 * dz[horzs] / ss['Z'], # IRF of log TFP
@@ -93,7 +93,7 @@ def get_irf(phi, kappa, ar_z, ma_z, sigma_z, ar_mp, ma_mp, horzs, ss, T):
              'PctBelowGDP': 100 * dPctBelowGDP_dz}
     
     # MP shock responses
-    dmp = lfilter([1,ma_mp],[1,-ar_mp],np.insert(np.zeros(T-1),0,1)) # ARMA(1,1) shock to Taylor rule
+    dmp = lfilter([1],[1,-ar1_mp,-ar2_mp],np.insert(np.zeros(T-1),0,1)) # AR(2) shock to Taylor rule
     dY_dmp = dmp @ G['Y']['rstar'][horzs,:].T / ss['Y'] # IRF of log output
     dpi_dmp = dmp @ G['pi']['rstar'][horzs,:].T # IRF of inflation
     dP_dmp = np.cumsum(dpi_dmp) # IRF of log price level
@@ -123,14 +123,14 @@ def moment_fct(theta):
     """Model-implied moment function
     """
     
-    (phi, kappa, ar_z, ma_z, sigma_z, ar_mp, ma_mp) = tuple(theta)
-    irf_z, irf_mp = get_irf(phi, kappa, ar_z, ma_z, sigma_z, ar_mp, ma_mp, horzs, ss, T)
+    (phi, kappa, ar1_z, ar2_z, sigma_z, ar1_mp, ar2_mp) = tuple(theta)
+    irf_z, irf_mp = get_irf(phi, kappa, ar1_z, ar2_z, sigma_z, ar1_mp, ar2_mp, horzs, ss, T)
     return np.hstack((irf_z['Z'],irf_z['Y'],irf_z['PctBelowGDP'],irf_mp['Y'],irf_mp['P'],irf_mp['R1Y'][1:]))
 
 
 # Estimation using diagonal weight matrix
-param_bounds = [(1,np.inf),(-np.inf,np.inf),(-1,1),(-np.inf,np.inf),(0,np.inf),(-1,1),(-np.inf,np.inf)] # Parameter bounds
-param_init = np.array([1.5,0.01,0.95,0,irf_z_data['TFP'][0]/100,0.5,0]) # Initial parameter guess
+param_bounds = [(0,np.inf),(1e-6,np.inf),(-np.inf,np.inf),(-np.inf,np.inf),(0,np.inf),(-np.inf,np.inf),(-np.inf,np.inf)] # Parameter bounds
+param_init = np.array([1.5,0.01,0,0,irf_z_data['TFP'][0]/100,0.5,0]) # Initial parameter guess
 
 print('Running numerical optimization for diagonal weight matrix...')
 opt_res = opt.minimize(lambda theta: np.sum(((moment-moment_fct(theta))/moment_se)**2),
