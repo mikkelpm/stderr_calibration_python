@@ -63,28 +63,28 @@ print('Done.')
 
 
 def get_jacob(phi, kappa, ss, T):
-    
+
     """Get het agent Jacobian
     """
-    
+
     exogenous = ['rstar', 'Z']
     unknowns = ['pi', 'w', 'Y']
     targets = ['nkpc_res', 'asset_mkt', 'labor_mkt']
-    block_list = [ss['J_ha'], hank.firm, hank.monetary, hank.fiscal, hank.nkpc, hank.mkt_clearing] 
+    block_list = [ss['J_ha'], hank.firm, hank.monetary, hank.fiscal, hank.nkpc, hank.mkt_clearing]
     ss2 = ss.copy()
     ss2.update({'phi': phi, 'kappa': kappa}) # Update non-steady-state parameters
     G = jac.get_G(block_list, exogenous, unknowns, targets, T, ss2)
     return G
-    
+
 
 def get_irf(phi, kappa, ar1_z, ar2_z, sigma_z, ar1_mp, ar2_mp, horzs, ss, T):
-    
+
     """Get impulse response functions of interest
     """
-    
+
     # Compute Jacobians
     G = get_jacob(phi, kappa, ss, T)
-    
+
     # TFP shock responses
     dz = ss['Z'] * np.cumsum(lfilter([1],[1,-ar1_z,-ar2_z],np.insert(np.zeros(T-1),0,sigma_z))) # AR(2) shock to TFP growth
     dY_dz = dz @ G['Y']['Z'][horzs,:].T / ss['Y'] # IRF of log output
@@ -92,19 +92,19 @@ def get_irf(phi, kappa, ar1_z, ar2_z, sigma_z, ar1_mp, ar2_mp, horzs, ss, T):
     irf_z = {'Z': 100 * dz[horzs] / ss['Z'], # IRF of log TFP
              'Y': 100 * dY_dz,
              'PctBelowGDP': 100 * dPctBelowGDP_dz}
-    
+
     # MP shock responses
     dmp = lfilter([1],[1,-ar1_mp,-ar2_mp],np.insert(np.zeros(T-1),0,1)) # AR(2) shock to Taylor rule
     dY_dmp = dmp @ G['Y']['rstar'][horzs,:].T / ss['Y'] # IRF of log output
     dpi_dmp = dmp @ G['pi']['rstar'][horzs,:].T # IRF of inflation
     dP_dmp = np.cumsum(dpi_dmp) # IRF of log price level
     d1y_dmp = 4*(phi*dpi_dmp + dmp[horzs]) # IRF of 1-year nominal interest rate
-    
+
     # Normalize MP shock responses
     irf_mp = {'Y': dY_dmp/d1y_dmp[0],
               'P': dP_dmp/d1y_dmp[0],
               'R1Y': d1y_dmp/d1y_dmp[0]}
-    
+
     return irf_z, irf_mp
 
 
@@ -120,10 +120,10 @@ moment_num = len(moment)
 
 
 def moment_fct(theta):
-    
+
     """Model-implied moment function
     """
-    
+
     (phi, kappa, ar1_z, ar2_z, sigma_z, ar1_mp, ar2_mp) = tuple(theta)
     irf_z, irf_mp = get_irf(phi, kappa, ar1_z, ar2_z, sigma_z, ar1_mp, ar2_mp, horzs, ss, T)
     return np.hstack((irf_z['Z'],irf_z['Y'],irf_z['PctBelowGDP'],irf_mp['Y'],irf_mp['P'],irf_mp['R1Y'][1:]))
