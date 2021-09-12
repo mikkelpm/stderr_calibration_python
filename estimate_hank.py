@@ -14,16 +14,8 @@ using functions produced by Auclert, Bardozcy, Rognlie & Straub (ECMA, 2021)
 """
 
 
-"""Part 1a: Steady-state parameters
-"""
 
-# Steady-state calibration using same parameters as in ABRS (2021)
-print('Computing steady state...')
-ss = hank.hank_ss(beta_guess=.982, vphi_guess=0.786)
-print('Done.')
-
-
-"""Part 1b: Empirical moments (impulse responses)
+"""Part 1a: Empirical moments (impulse responses)
 """
 
 horzs = [0,1,2,8] # Response horizons (quarters after shock)
@@ -49,6 +41,15 @@ for v in ['INDPRO','CPIAUCSL','GS1']:
 # Note: norm.ppf(0.95) is due to the paper reporting 90% credible bands
 
 
+"""Part 1b: Steady-state parameters
+"""
+
+# Steady-state calibration using same parameters as in ABRS (2021)
+print('Computing steady state...')
+ss = hank.hank_ss(beta_guess=.982, vphi_guess=0.786)
+print('Done.')
+
+
 """ Part 2: Model-based IRF functions
 """
 
@@ -56,7 +57,7 @@ T = 300 # Time horizon for equilibrium calculations
 
 # Compute Jacobian of household block once and for all (only depends on non-estimated parameters)
 print('Computing Jacobian of household block...')
-J_ha = jac.get_G([hank.household_trans], ['r', 'w', 'Y', 'Div', 'Tax'], [], [], T, ss, save=True)
+J_ha = hank.household_trans.jac(ss, T, ['r', 'w', 'Div', 'Tax'])
 ss.update({'J_ha': J_ha})
 print('Done.')
 
