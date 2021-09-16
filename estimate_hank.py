@@ -8,6 +8,8 @@ from sequence_jacobian import hank
 import sequence_jacobian.jacobian as jac
 from stderr_calibration import MinDist
 
+import sys
+
 
 """Estimation of HANK model
 using functions produced by Auclert, Bardozcy, Rognlie & Straub (ECMA, 2021)
@@ -62,6 +64,7 @@ ss.update({'J_ha': J_ha})
 print('Done.')
 
 
+# Compute general equilibrium Jacobians at specified parameter estimates
 def get_jacob(phi, kappa, ss, T):
 
     """Get het agent Jacobian
@@ -86,23 +89,26 @@ def get_irf(phi, kappa, ar1_z, ar2_z, sigma_z, ar1_mp, ar2_mp, horzs, ss, T):
     G = get_jacob(phi, kappa, ss, T)
 
     # TFP shock responses
-    dz = ss['Z'] * np.cumsum(lfilter([1],[1,-ar1_z,-ar2_z],np.insert(np.zeros(T-1),0,sigma_z))) # AR(2) shock to TFP growth
-    dY_dz = dz @ G['Y']['Z'][horzs,:].T / ss['Y'] # IRF of log output
-    dPctBelowGDP_dz = dz @ G['EARN_LT_GDP']['Z'][horzs,:].T # IRF of fraction of people earning less than GDP
-    irf_z = {'Z': 100 * dz[horzs] / ss['Z'], # IRF of log TFP
-             'Y': 100 * dY_dz,
-             'PctBelowGDP': 100 * dPctBelowGDP_dz}
+    dgrowthZ = lfilter([1],[1,-ar1_z,-ar2_z],np.insert(np.zeros(T-1),0,sigma_z)) # Response of growth in TFP (following AR(2)) to shock, at each horizon
+    dlogZ    = np.cumsum(dgrowthZ) # Response of log TFP at each horizon; for each horizon, the sum of current and past growth responses
+    dZ       = ss['Z'] * dlogZ     # Response of level of TFP at each horizon, which is response of log level, dlogZ, times initial value (steady state)
+    dlogY_dZ = dZ @ G['Y']['Z'][horzs,:].T / ss['Y'] # IRF of log output; divide response of level by starting value (steady state)
+    dPctBelowGDP_dZ = dZ @ G['EARN_LT_GDP']['Z'][horzs,:].T # IRF of fraction of people earning less than GDP
+
+    irf_z = {'Z': 100 * dlogZ[horzs], # IRF of log TFP
+             'Y': 100 * dlogY_dZ,
+             'PctBelowGDP': 100 * dPctBelowGDP_dZ}
 
     # MP shock responses
     dmp = lfilter([1],[1,-ar1_mp,-ar2_mp],np.insert(np.zeros(T-1),0,1)) # AR(2) shock to Taylor rule
-    dY_dmp = dmp @ G['Y']['rstar'][horzs,:].T / ss['Y'] # IRF of log output
+    dlogY_dmp = dmp @ G['Y']['rstar'][horzs,:].T / ss['Y'] # IRF of log output
     dpi_dmp = dmp @ G['pi']['rstar'][horzs,:].T # IRF of inflation
-    dP_dmp = np.cumsum(dpi_dmp) # IRF of log price level
+    dlogP_dmp = np.cumsum(dpi_dmp) # IRF of log price level
     d1y_dmp = 4*(phi*dpi_dmp + dmp[horzs]) # IRF of 1-year nominal interest rate
 
     # Normalize MP shock responses
-    irf_mp = {'Y': dY_dmp/d1y_dmp[0],
-              'P': dP_dmp/d1y_dmp[0],
+    irf_mp = {'Y': dlogY_dmp/d1y_dmp[0],
+              'P': dlogP_dmp/d1y_dmp[0],
               'R1Y': d1y_dmp/d1y_dmp[0]}
 
     return irf_z, irf_mp
