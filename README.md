@@ -13,7 +13,7 @@ Other versions: [Matlab](https://github.com/mikkelpm/stderr_calibration_matlab)
 
 ## Contents
 
-- [example.ipynb](example.ipynb): Simple interactive example in Jupyter Notebook illustrating the main functionality of the package (also available in [HTML](docs/example.html) format)
+- [example.ipynb](example.ipynb): Simple interactive example in Jupyter Notebook illustrating the main functionality of the package (also available in [HTML format](https://mikkelpm.github.io/stderr_calibration_python/example.html))
 
 - [stderr_calibration](stderr_calibration): Python package for minimum distance estimation, standard errors, and testing
 
