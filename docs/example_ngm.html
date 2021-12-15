@@ -14015,7 +14015,7 @@ We define the model equations and data as follows. Let $\theta=(\beta,\delta,\al
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[1]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -14043,10 +14043,10 @@ We define the model equations and data as follows. Let $\theta=(\beta,\delta,\al
 <p>We can now estimate the parameters and compute their worst-case standard errors:</p>
 
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[2]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">param_estim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">mu</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">mu</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">mu</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">mu</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="o">+</span><span class="n">mu</span><span class="p">[</span><span class="mi">1</span><span class="p">])])</span> <span class="c1"># Use closed-form formula for estimates</span>
@@ -14062,16 +14062,40 @@ We define the model equations and data as follows. Let $\theta=(\beta,\delta,\al
 </div>
 </div>
 
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Parameter estimates
+[0.98       0.08       0.30122449]
+Worst-case standard errors
+[0.02      0.005     0.0814903]
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <h2 id="Over-identification-test">Over-identification test<a class="anchor-link" href="#Over-identification-test">&#182;</a></h2><p>The textbook NGM also implies that the steady-state labor share of income should equal $1-\alpha$. Suppose we measure the sample average of the labor share to be 0.65 with a standard error of 0.03. We wish to test the over-identifying restriction that the earlier estimate of $\hat{\alpha}$ is consistent with this moment. We can do this as follows.</p>
 
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Define expanded mapping that also includes over-identifying moment</span>
@@ -14098,6 +14122,42 @@ We define the model equations and data as follows. Let $\theta=(\beta,\delta,\al
      </div>
 </div>
 </div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>     pcost       dcost       gap    pres   dres   k/t
+ 0:  1.0000e+00  1.0000e+00  6e+00  1e+00  0e+00  1e+00
+ 1:  1.4698e+00  1.5213e+00  6e+00  1e+00  4e-18  1e+00
+ 2:  1.8054e+00  1.8341e+00  1e+00  2e-01  1e-18  2e-01
+ 3:  2.2129e+00  2.2305e+00  6e-01  1e-01  7e-19  1e-01
+ 4:  2.4470e+00  2.4479e+00  3e-02  5e-03  2e-19  5e-03
+ 5:  2.4638e+00  2.4638e+00  1e-03  2e-04  4e-18  2e-04
+ 6:  2.4643e+00  2.4643e+00  3e-05  5e-06  2e-18  5e-06
+ 7:  2.4643e+00  2.4643e+00  4e-07  7e-08  2e-19  8e-08
+Optimal solution found.
+Error in matching non-targeted moment
+-0.04877551020408155
+Standard error
+0.019892689485718623
+t-statistic
+-2.45193141124022
+</pre>
+</div>
+</div>
+
+</div>
+
 </div>
 
 </div>
