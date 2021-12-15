@@ -15,6 +15,8 @@ Other versions: [Matlab](https://github.com/mikkelpm/stderr_calibration_matlab)
 
 - [example.ipynb](example.ipynb): Simple interactive example in Jupyter Notebook illustrating the main functionality of the package (also available in [HTML format](https://mikkelpm.github.io/stderr_calibration_python/example.html))
 
+- [example_ngm.ipynb](example_ngm.ipynb): Even simpler example in Jupyter Notebook in the context of the Neoclassical Growth Model (also available in [HTML format](https://mikkelpm.github.io/stderr_calibration_python/example_ngm.html))
+
 - [stderr_calibration](stderr_calibration): Python package for minimum distance estimation, standard errors, and testing
 
 - [estimate_hank.py](estimate_hank.py): Empirical application to estimation of a heterogeneous agent New Keynesian macro model, using impulse response estimates from [Chang, Chen & Schorfheide (2021)](https://cpb-us-w2.wpmucdn.com/web.sas.upenn.edu/dist/e/242/files/2021/05/EvalHAmodels_v6_pub.pdf) and [Miranda-Agrippino & Ricco (2021)](https://doi.org/10.1257/mac.20180124), which are stored in the [data](data) folder
