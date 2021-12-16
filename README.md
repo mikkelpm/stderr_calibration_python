@@ -15,7 +15,7 @@ Other versions: [Matlab](https://github.com/mikkelpm/stderr_calibration_matlab)
 
 - [example.ipynb](example.ipynb): Simple interactive example in Jupyter Notebook illustrating the main functionality of the package (also available in [HTML format](https://mikkelpm.github.io/stderr_calibration_python/example.html))
 
-- [example_ngm.ipynb](example_ngm.ipynb): Even simpler example in Jupyter Notebook in the context of the Neoclassical Growth Model (also available in [HTML format](https://mikkelpm.github.io/stderr_calibration_python/example_ngm.html))
+- [example_ngm.ipynb](example_ngm.ipynb): Even simpler example in Jupyter Notebook of calibrating the Neoclassical Growth Model (also available in [HTML format](https://mikkelpm.github.io/stderr_calibration_python/example_ngm.html))
 
 - [stderr_calibration](stderr_calibration): Python package for minimum distance estimation, standard errors, and testing
 
