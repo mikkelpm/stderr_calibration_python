@@ -13973,23 +13973,23 @@ a.anchor-link {
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <h1 id="Standard-errors-for-calibrated-parameters:-Neoclassical-Growth-Model-example">Standard errors for calibrated parameters: Neoclassical Growth Model example<a class="anchor-link" href="#Standard-errors-for-calibrated-parameters:-Neoclassical-Growth-Model-example">&#182;</a></h1><p><em>We are grateful to Ben Moll for suggesting this example. Any errors are our own.</em></p>
 <p>In this notebook we will work through the basic logic of <a href="https://scholar.princeton.edu/mikkelpm/calibration">Cocci &amp; Plagborg-Møller (2021)</a> in the context of calibrating a simple version of the Neoclassical Growth Model (NGM). Though the model is highly stylized, it helps provide intuition for our procedures. Please see our paper for other, arguably more realistic, empirical applications.</p>
-<h2 id="Model">Model<a class="anchor-link" href="#Model">&#182;</a></h2><p>We consider the simplest version of the NGM without population growth or technological growth. As explained in <a href="https://perhuaman.files.wordpress.com/2014/06/macrotheory-dirk-krueger.pdf">Dirk Krueger's lecture notes (section 5.4)</a>, this model implies three key steady state equations:</p>
+<h2 id="Model">Model<a class="anchor-link" href="#Model">&#182;</a></h2><p>We consider the simplest version of the NGM without population growth or technological growth. As explained in section 3.4 of <a href="https://perhuaman.files.wordpress.com/2014/06/macrotheory-dirk-krueger.pdf">Dirk Krueger's lecture notes</a> (note the difference in notation), this model implies three key steady-state equations:</p>
 <ol>
-<li><strong>Euler equation:</strong> $\frac{1}{1+r} = \beta$, where $\beta$ is the household discount factor and $r$ is the real interest rate.</li>
-<li><strong>Capital accumulation:</strong> $\frac{I}{K} = \delta$, where $\delta$ is the depreciation rate and $I/K$ is the ratio of investment to capital stock.</li>
-<li><strong>Rental rate of capital:</strong> $\frac{K}{Y} = \frac{\alpha}{\frac{1}{\beta}-1+\delta}$, where $\alpha$ is the capital elasticity in the production function and $\frac{K}{Y}$ is the capital-output ratio.</li>
+<li><strong>Euler equation:</strong> $r = \rho$, where $\rho$ is the household discount rate and $r$ is the real interest rate.</li>
+<li><strong>Capital accumulation:</strong> $\frac{I}{K} = \delta$, where $\delta$ is the capital depreciation rate and $I/K$ is the ratio of investment to capital stock.</li>
+<li><strong>Rental rate of capital:</strong> $\frac{K}{Y} = \frac{\alpha}{\rho+\delta}$, where $\alpha$ is the capital elasticity in the production function and $\frac{K}{Y}$ is the capital-output ratio.</li>
 </ol>
-<p>We want to use these equations to calibrate (i.e., estimate) the parameters $\beta$, $\delta$, and $\alpha$.</p>
-<h2 id="Estimation">Estimation<a class="anchor-link" href="#Estimation">&#182;</a></h2><p>We can measure the steady-state values of the variables on the left-hand side of the above equations by computing sample averages of the relevant time series over a long time span. Denote these sample averages by $\widehat{\frac{1}{1+r}}$, $\widehat{\frac{I}{K}}$, and $\widehat{\frac{K}{Y}}$, respectively. We can then obtain natural method-of-moment estimates of the three parameters as follows:
-$$\hat{\beta} = \widehat{\frac{1}{1+r}},\quad \hat{\delta}=\widehat{\frac{I}{K}},\quad \hat{\alpha}=\widehat{\frac{K}{Y}}\left(\frac{1}{\hat{\beta}}-1+\hat{\delta} \right).$$</p>
+<p>We want to use these equations to calibrate (i.e., estimate) the parameters $\rho$, $\delta$, and $\alpha$.</p>
+<h2 id="Estimation">Estimation<a class="anchor-link" href="#Estimation">&#182;</a></h2><p>We can measure the steady-state values of the variables on the left-hand side of the above equations by computing sample averages of the relevant time series over a long time span. Denote these sample averages by $\hat{r}$, $\widehat{\frac{I}{K}}$, and $\widehat{\frac{K}{Y}}$, respectively. We can then obtain natural method-of-moment estimates of the three parameters as follows:
+$$\hat{\rho} = \hat{r},\quad \hat{\delta}=\widehat{\frac{I}{K}},\quad \hat{\alpha}=\widehat{\frac{K}{Y}}\left(\hat{\rho}+\hat{\delta} \right).$$</p>
 <h2 id="Standard-errors">Standard errors<a class="anchor-link" href="#Standard-errors">&#182;</a></h2><p>The sample averages above are subject to statistical noise due to the finite time sample. This statistical noise obviously carries over to the estimated parameters. To gauge the extent of the noise, we seek to compute standard errors for the estimated parameters.</p>
-<p>The key ingredients into calculating standard errors for the parameters are the standard errors for the three sample averages. Denote these by $\hat{\sigma}\left(\widehat{\frac{1}{1+r}}\right)$, $\hat{\sigma}\left(\widehat{\frac{I}{K}}\right)$, and $\hat{\sigma}\left(\widehat{\frac{K}{Y}}\right)$. To compute these standard errors, one would have to apply a formula that accounts for serial correlation in the data, such as the <a href="https://www.stata.com/manuals16/tsnewey.pdf">Newey-West long-run variance estimator</a>. Let's assume that we have already done this.</p>
-<p>It's immediate what the standard errors for $\hat{\beta}$ and $\hat{\delta}$ are: They simply equal $\hat{\sigma}\left(\widehat{\frac{1}{1+r}}\right)$ and $\hat{\sigma}\left(\widehat{\frac{I}{K}}\right)$, respectively. However, the standard error for $\hat{\alpha}$ is not so obvious, as this estimator depends implicitly on all three sample averages:
-$$\hat{\alpha}=\widehat{\frac{K}{Y}}\left(\frac{1}{\widehat{\frac{1}{1+r}}}-1+\widehat{\frac{I}{K}} \right) \approx \alpha + x_1\left(\widehat{\frac{1}{1+r}}-\frac{1}{1+r}\right) + x_2\left(\widehat{\frac{I}{K}}-\frac{I}{K}\right) + x_3\left(\widehat{\frac{K}{Y}}-\frac{K}{Y}\right),$$
+<p>The key ingredients into calculating standard errors for the parameters are the standard errors for the three sample averages. Denote these by $\hat{\sigma}\left(\hat{r}\right)$, $\hat{\sigma}\left(\widehat{\frac{I}{K}}\right)$, and $\hat{\sigma}\left(\widehat{\frac{K}{Y}}\right)$. To compute these standard errors, one would have to apply a formula that accounts for serial correlation in the data, such as the <a href="https://www.stata.com/manuals16/tsnewey.pdf">Newey-West long-run variance estimator</a>. Let's assume that we have already done this.</p>
+<p>It's immediate what the standard errors for $\hat{\rho}$ and $\hat{\delta}$ are: They simply equal $\hat{\sigma}\left(\hat{r}\right)$ and $\hat{\sigma}\left(\widehat{\frac{I}{K}}\right)$, respectively. However, the standard error for $\hat{\alpha}$ is not so obvious, as this estimator depends implicitly on all three sample averages:
+$$\hat{\alpha}=\widehat{\frac{K}{Y}}\left(\hat{r}+\widehat{\frac{I}{K}}\right) \approx \alpha + x_1\left(\hat{r}-r\right) + x_2\left(\widehat{\frac{I}{K}}-\frac{I}{K}\right) + x_3\left(\widehat{\frac{K}{Y}}-\frac{K}{Y}\right),$$
 where the last approximation is a <a href="https://en.wikipedia.org/wiki/Delta_method">delta method</a> linearization with
-$$x_1=-\frac{\frac{K}{Y}}{\left(\frac{1}{1+r}\right)^2}=-(1+r)^2\frac{K}{Y},\quad x_2=\frac{K}{Y},\quad x_3=\frac{1}{\frac{1}{1+r}}-1+\frac{I}{K}=r+\frac{I}{K}.$$
+$$x_1=x_2=\frac{K}{Y},\quad x_3=r+\frac{I}{K}.$$
 Since $\hat{\alpha}$ is approximately a linear combination of several sample averages, computing its standard error requires not just the standard errors for the individual sample averages, but also their correlations.</p>
-<h2 id="Limited-information-inference">Limited-information inference<a class="anchor-link" href="#Limited-information-inference">&#182;</a></h2><p>If we observed annual data on the real interest rate, capital, investment, and output, it would not be too difficult to estimate the correlations of the sample averages. This could again be done using the Newey-West estimator of the long-run variance-covariance matrix. Yet, in practice we may face several potential complicating factors:</p>
+<h2 id="Limited-information-inference">Limited-information inference<a class="anchor-link" href="#Limited-information-inference">&#182;</a></h2><p>If we observed annual data on the real interest rate, capital, investment, and output, it would not be too difficult to estimate the cross-correlations of the sample averages. This could again be done using the Newey-West estimator of the $3 \times 3$ long-run variance-covariance matrix. Yet, in practice we may face several potential complicating factors:</p>
 <ol>
 <li><strong>Non-overlapping samples:</strong> Perhaps we do not observe all time series over the same time span. This makes it difficult to apply the usual Newey-West formulas.</li>
 <li><strong>Different data frequencies:</strong> Perhaps the real interest rate series is obtained from daily yields on inflation-protected bonds, while the other time series are annual. This again complicates the econometric analysis.</li>
@@ -14006,16 +14006,16 @@ $$\begin{align*}
 &amp;= \text{Std}(X)+\text{Std}(Y).
 \end{align*}$$
 Applying this logic to the earlier approximation for $\hat{\alpha}$, we get the bound (up to a small approximation error)
-$$\text{Std}(\hat{\alpha}) \leq |x_1|\text{Std}\left(\widehat{\frac{1}{1+r}}\right) + |x_2|\text{Std}\left(\widehat{\frac{I}{K}}\right) + |x_3|\text{Std}\left(\widehat{\frac{K}{Y}}\right).$$
+$$\text{Std}(\hat{\alpha}) \leq |x_1|\text{Std}\left(\hat{r}\right) + |x_2|\text{Std}\left(\widehat{\frac{I}{K}}\right) + |x_3|\text{Std}\left(\widehat{\frac{K}{Y}}\right).$$
 We can therefore compute an upper bound for the standard error of $\hat{\alpha}$ as follows:
-$$\hat{\sigma}(\hat{\alpha}) \leq |\hat{x}_1|\hat{\sigma}\left(\widehat{\frac{1}{1+r}}\right) + |\hat{x}_2|\hat{\sigma}\left(\widehat{\frac{I}{K}}\right) + |\hat{x}_3|\hat{\sigma}\left(\widehat{\frac{K}{Y}}\right),$$
+$$\hat{\sigma}(\hat{\alpha}) \leq |\hat{x}_1|\hat{\sigma}\left(\hat{r}\right) + |\hat{x}_2|\hat{\sigma}\left(\widehat{\frac{I}{K}}\right) + |\hat{x}_3|\hat{\sigma}\left(\widehat{\frac{K}{Y}}\right),$$
 where
-$$\hat{x}_1=-\frac{\widehat{\frac{K}{Y}}}{\left(\widehat{\frac{1}{1+r}}\right)^2},\quad \hat{x}_2=\widehat{\frac{K}{Y}},\quad \hat{x}_3=\left(\frac{1}{\widehat{\frac{1}{1+r}}}-1+\widehat{\frac{I}{K}} \right).$$
+$$\hat{x}_1=\hat{x}_2=\widehat{\frac{K}{Y}},\quad \hat{x}_3=\left(\hat{r}+\widehat{\frac{I}{K}} \right).$$
 Notice that this upper bound only depends on things that we know: the sample averages themselves and their individual standard errors (but not the correlations across moments).</p>
-<p>It is not possible to improve the bound without further knowledge of the correlation structure: The bound turns out to equal the actual standard error when the three sample averages are perfectly correlated with each other (either positively or negatively, depending on the signs of $x_1,x_2,x_3$). This is proved in Lemma 1 in <a href="https://scholar.princeton.edu/mikkelpm/calibration">our paper</a>. For this reason, we refer to the standard error bound as the <em>worst-case standard error</em>.</p>
-<h2 id="Numerical-example">Numerical example<a class="anchor-link" href="#Numerical-example">&#182;</a></h2><p>Our software package makes it easy to calculate worst-case standard errors. As an illustration, suppose the sample averages (with standard errors in parenthesis) equal
-$$\widehat{\frac{1}{1+r}}=0.98\;(0.02), \quad \widehat{\frac{I}{K}}=0.08\;(0.005), \quad \widehat{\frac{K}{Y}} = 3\;(0.04).$$
-We define the model equations and data as follows. Let $\theta=(\beta,\delta,\alpha)$ and $\mu=(\frac{1}{1+r},\frac{I}{K},\frac{K}{Y})$ denote the vectors of parameters and moments, respectively.</p>
+<p>It's impossible to improve the bound without further knowledge of the correlation structure: The bound turns out to equal the actual standard error when the three sample averages are perfectly correlated with each other. This is proved in Lemma 1 in <a href="https://scholar.princeton.edu/mikkelpm/calibration">our paper</a>. For this reason, we refer to the standard error bound as the <em>worst-case standard error</em>.</p>
+<h2 id="Numerical-example">Numerical example<a class="anchor-link" href="#Numerical-example">&#182;</a></h2><p>Our software package makes it easy to calculate worst-case standard errors. As an illustration, suppose the sample averages (with standard errors in parentheses) equal
+$$\hat{r}=0.02\;(0.002), \quad \widehat{\frac{I}{K}}=0.08\;(0.01), \quad \widehat{\frac{K}{Y}} = 3\;(0.1).$$
+We define the model equations and data as follows. Let $\theta=(\rho,\delta,\alpha)$ and $\mu=(r,\frac{I}{K},\frac{K}{Y})$ denote the vectors of parameters and moments, respectively.</p>
 
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
@@ -14028,11 +14028,11 @@ We define the model equations and data as follows. Let $\theta=(\beta,\delta,\al
 <span class="kn">from</span> <span class="nn">stderr_calibration</span> <span class="kn">import</span> <span class="n">MinDist</span> <span class="c1"># Minimum distance routines</span>
 
 <span class="c1"># Define mapping from parameters to moments</span>
-<span class="n">h</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">theta</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">theta</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">theta</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="o">+</span><span class="n">theta</span><span class="p">[</span><span class="mi">1</span><span class="p">])])</span>
+<span class="n">h</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">theta</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">theta</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">theta</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">/</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">theta</span><span class="p">[</span><span class="mi">1</span><span class="p">])])</span>
 
 <span class="c1"># Define empirical moments and their s.e.</span>
-<span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.98</span><span class="p">,</span><span class="mf">0.08</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
-<span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.02</span><span class="p">,</span><span class="mf">0.005</span><span class="p">,</span><span class="mf">0.04</span><span class="p">])</span>
+<span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.02</span><span class="p">,</span><span class="mf">0.08</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+<span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.002</span><span class="p">,</span><span class="mf">0.01</span><span class="p">,</span><span class="mf">0.1</span><span class="p">])</span>
 
 <span class="c1"># Define MinDist object used in later analysis</span>
 <span class="n">obj</span> <span class="o">=</span> <span class="n">MinDist</span><span class="p">(</span><span class="n">h</span><span class="p">,</span><span class="n">mu</span><span class="p">,</span><span class="n">moment_se</span><span class="o">=</span><span class="n">sigma</span><span class="p">)</span>
@@ -14055,7 +14055,7 @@ We define the model equations and data as follows. Let $\theta=(\beta,\delta,\al
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[2]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">param_estim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">mu</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">mu</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">mu</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">mu</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="o">+</span><span class="n">mu</span><span class="p">[</span><span class="mi">1</span><span class="p">])])</span> <span class="c1"># Use closed-form formula for estimates</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">param_estim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">mu</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">mu</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">mu</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">mu</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">mu</span><span class="p">[</span><span class="mi">1</span><span class="p">])])</span> <span class="c1"># Closed-form formula for estimates</span>
 <span class="n">res</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">param_estim</span><span class="o">=</span><span class="n">param_estim</span><span class="p">,</span><span class="n">eff</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Parameter estimates&#39;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;estim&#39;</span><span class="p">])</span>
@@ -14081,9 +14081,9 @@ We define the model equations and data as follows. Let $\theta=(\beta,\delta,\al
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
 <pre>Parameter estimates
-[0.98       0.08       0.30122449]
+[0.02 0.08 0.3 ]
 Worst-case standard errors
-[0.02      0.005     0.0814903]
+[0.002 0.01  0.046]
 </pre>
 </div>
 </div>
@@ -14095,8 +14095,8 @@ Worst-case standard errors
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>(Note: The derivatives required to compute $\hat{x}_1,\hat{x}_2,\hat{x}_3$ are computed under the hood by the software using finite differences. We could have also computed the parameter estimates $\hat{\beta},\hat{\delta},\hat{\alpha}$ numerically if we didn't have a closed-form formula. See our <a href="https://mikkelpm.github.io/stderr_calibration_python/example.html">other example</a> for details.)</p>
-<h2 id="Over-identification-test">Over-identification test<a class="anchor-link" href="#Over-identification-test">&#182;</a></h2><p>The textbook NGM also implies that the steady-state labor share of income should equal $1-\alpha$. Suppose we measure the sample average of the labor share to be 0.65 with a standard error of 0.03. We wish to test the over-identifying restriction that the earlier estimate of $\hat{\alpha}$ is consistent with this moment. We can do this as follows.</p>
+<p>(Note: The derivatives required to compute $\hat{x}_1,\hat{x}_2,\hat{x}_3$ are produced under the hood by the software using finite differences. We could have also computed the parameter estimates $\hat{\rho},\hat{\delta},\hat{\alpha}$ numerically if we didn't have a closed-form formula. See our <a href="https://mikkelpm.github.io/stderr_calibration_python/example.html">other example</a> for details.)</p>
+<h2 id="Over-identification-test">Over-identification test<a class="anchor-link" href="#Over-identification-test">&#182;</a></h2><p>The textbook NGM also implies that the steady-state labor share of income should equal $1-\alpha$. Suppose we measure the sample average of the labor share to be 0.6 with a standard error of 0.01. We wish to test the over-identifying restriction that the earlier estimate of $\hat{\alpha}$ is consistent with this moment. We can do this as follows.</p>
 
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
@@ -14109,12 +14109,13 @@ Worst-case standard errors
 <span class="n">h_expand</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">theta</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">h</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span><span class="mi">1</span><span class="o">-</span><span class="n">theta</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
 
 <span class="c1"># Define expanded empirical moments and standard errors</span>
-<span class="n">mu_expand</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span><span class="mf">0.65</span><span class="p">)</span>
-<span class="n">sigma_expand</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span><span class="mf">0.03</span><span class="p">)</span>
+<span class="n">mu_expand</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span><span class="mf">0.6</span><span class="p">)</span>
+<span class="n">sigma_expand</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span><span class="mf">0.01</span><span class="p">)</span>
 
 <span class="c1"># Define new MinDist object and fit</span>
 <span class="n">obj_expand</span> <span class="o">=</span> <span class="n">MinDist</span><span class="p">(</span><span class="n">h_expand</span><span class="p">,</span><span class="n">mu_expand</span><span class="p">,</span><span class="n">moment_se</span><span class="o">=</span><span class="n">sigma_expand</span><span class="p">)</span>
-<span class="n">res_expand</span> <span class="o">=</span> <span class="n">obj_expand</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">param_estim</span><span class="o">=</span><span class="n">param_estim</span><span class="p">,</span><span class="n">eff</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="c1"># Same parameter estimates as before</span>
+<span class="n">res_expand</span> <span class="o">=</span> <span class="n">obj_expand</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">param_estim</span><span class="o">=</span><span class="n">param_estim</span><span class="p">,</span><span class="n">weight_mat</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">])),</span><span class="n">eff</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="c1"># Same parameter estimates as before (weight matrix indicates that these estimates do not use the fourth moment)</span>
 
 <span class="c1"># Over-identification test</span>
 <span class="n">res_overid</span> <span class="o">=</span> <span class="n">obj_expand</span><span class="o">.</span><span class="n">overid</span><span class="p">(</span><span class="n">res_expand</span><span class="p">)</span>
@@ -14144,21 +14145,18 @@ Worst-case standard errors
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
 <pre>     pcost       dcost       gap    pres   dres   k/t
- 0:  1.0000e+00  1.0000e+00  6e+00  1e+00  0e+00  1e+00
- 1:  1.4698e+00  1.5213e+00  6e+00  1e+00  4e-18  1e+00
- 2:  1.8054e+00  1.8341e+00  1e+00  2e-01  1e-18  2e-01
- 3:  2.2129e+00  2.2305e+00  6e-01  1e-01  7e-19  1e-01
- 4:  2.4470e+00  2.4479e+00  3e-02  5e-03  2e-19  5e-03
- 5:  2.4638e+00  2.4638e+00  1e-03  2e-04  4e-18  2e-04
- 6:  2.4643e+00  2.4643e+00  3e-05  5e-06  2e-18  5e-06
- 7:  2.4643e+00  2.4643e+00  4e-07  7e-08  2e-19  8e-08
+ 0:  1.0118e-29  1.0118e-29  1e-02  2e+00  0e+00  1e+00
+ 1: -4.4391e-18  1.0118e-29  1e-04  2e-02  1e-17  1e-02
+ 2: -8.6524e-20  1.0118e-29  1e-06  2e-04  2e-18  1e-04
+ 3: -6.3766e-22  1.0118e-29  1e-08  2e-06  7e-18  1e-06
+ 4: -5.9271e-24  1.0118e-29  1e-10  2e-08  2e-18  1e-08
 Optimal solution found.
 Error in matching non-targeted moment
--0.04877551020408155
+-0.09999999999999998
 Standard error
-0.019892689485718623
+0.0559999999999835
 t-statistic
--2.45193141124022
+-1.7857142857148114
 </pre>
 </div>
 </div>
@@ -14170,7 +14168,8 @@ t-statistic
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>Since the t-statistic exceeds 1.96 in absolute value, we can reject the validity of the model at the 95% level.</p>
+<p>Since the absolute value of the t-statistic lies between 1.64 and 1.96, we can reject the validity of the model at the 10% significance level, but not at the 5% level.</p>
+<p>The over-identification test checks how different the estimate $\hat{\alpha}$ would have been if we had instead computed it as the sample average capital share of income $1-0.6=0.4$. Is the difference in parameter estimates between the two calibration strategies too large to be explained by statistical noise?</p>
 <h2 id="Other-features-in-the-paper">Other features in the paper<a class="anchor-link" href="#Other-features-in-the-paper">&#182;</a></h2><p>The above NGM example is very simple and stylized. In <a href="https://scholar.princeton.edu/mikkelpm/calibration">our paper</a> we extend the basic ideas along various dimensions that are relevant for applied research. For example:</p>
 <ul>
 <li>The matched moments need not be simple sample averages, but could be regression coefficients, quantiles, etc. The moments need not be related to steady-state quantities, but could involve essentially any feature of the available data.</li>
