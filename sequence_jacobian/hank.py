@@ -72,7 +72,7 @@ def solve_uc(w, T, eis, frisch, vphi, uc_seed):
     max_{c, n} c**(1-1/eis) + vphi*n**(1+1/frisch) s.t. c = w*n + T
     """
     log_uc = np.log(uc_seed)
-    for i in range(100):
+    for i in range(30):
         ne, ne_p = netexp(log_uc, w, T, eis, frisch, vphi)
         if abs(ne) < 1E-11:
             break
