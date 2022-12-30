@@ -87,14 +87,15 @@ def solve_uc(w, T, eis, frisch, vphi, uc_seed):
 @njit
 def netexp(log_uc, w, T, eis, frisch, vphi):
     """Return net expenditure as a function of log uc and its derivative."""
-    c, n = cn(np.exp(log_uc), w, eis, frisch, vphi)
+    uc = np.exp(log_uc)
+    c = uc ** (-eis)
+    n = (w * uc / vphi) ** frisch
     ne = c - w * n - T
 
     # c and n have elasticities of -eis and frisch wrt log u'(c)
     c_loguc = -eis * c
     n_loguc = frisch * n
     netexp_loguc = c_loguc - w * n_loguc
-
     return ne, netexp_loguc
 
 
