@@ -152,6 +152,26 @@ print('Convergence message:')
 print(opt_res['message'])
 
 
+# Replication of optimisation
+param_initbound = [(1,3),(-0.5,0.5),(-1,1),(-1,1),(0.5*irf_z_data['TFP'][0]/100,1.5*irf_z_data['TFP'][0]/100),(-1,1),(-1,1)]
+param_lowerbound = [1,-0.5,-1,-1,0.5*irf_z_data['TFP'][0]/100,-1,-1]
+param_dist = [2,1,2,2,irf_z_data['TFP'][0]/100,2,2]
+param_initgrid = np.random.rand(10,7)
+param_initgrid = np.multiply(param_initgrid,param_dist)+param_lowerbound
+print('Replicating numerical optimization for diagonal weight matrix and using random initial guess...')
+param_estim_repli = np.zeros(np.shape(param_initgrid))
+success=np.zeros(np.shape(param_initgrid)[0])
+for i,guess in enumerate(param_initgrid): 
+    opt_res_repli = opt.minimize(lambda theta: np.sum(((moment-moment_fct(theta))/moment_se)**2),
+                       guess,
+                       method='L-BFGS-B',
+                       bounds=param_bounds,
+                       callback=None)
+    param_estim_repli[i] = opt_res_repli['x'] # Parameter estimates
+    success[i] = opt_res_repli['success']
+print('Done.')
+
+
 #Standard errors
 obj = MinDist(moment_fct, moment, moment_se=moment_se)
 print('Computing standard errors...')
