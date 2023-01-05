@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from sequence_jacobian import hank
 import sequence_jacobian.jacobian as jac
 from stderr_calibration import MinDist
+from multiprocessing import Pool
 
 import sys
 
@@ -151,12 +152,25 @@ assert opt_res['success']
 print('Convergence message:')
 print(opt_res['message'])
 
+# Optimization starting with Auclert et al. estimation
+param_init_Auc = np.array([1.352,0.144,0.951,0,0.072,0.460,0]) # Initial parameter guess
+print('Starting from Auclert et al. estimates...')
+opt_res_Auc = opt.minimize(lambda theta: np.sum(((moment-moment_fct(theta))/moment_se)**2),
+                       param_init_Auc,
+                       method='L-BFGS-B',
+                       bounds=param_bounds,
+                       callback=None)
+param_estim_Auc = opt_res_Auc['x'] # Parameter estimates
+print('Done.')
+assert opt_res_Auc['success']
+print('Convergence message:')
+print(opt_res_Auc['message'])
 
-# Replication of optimisation
+# Replication of optimization
 param_initbound = [(1,3),(-0.5,0.5),(-1,1),(-1,1),(0.5*irf_z_data['TFP'][0]/100,1.5*irf_z_data['TFP'][0]/100),(-1,1),(-1,1)]
 param_lowerbound = [1,-0.5,-1,-1,0.5*irf_z_data['TFP'][0]/100,-1,-1]
 param_dist = [2,1,2,2,irf_z_data['TFP'][0]/100,2,2]
-param_initgrid = np.random.rand(30,7)
+param_initgrid = np.random.rand(3,7)
 param_initgrid = np.multiply(param_initgrid,param_dist)+param_lowerbound
 print('Replicating numerical optimization for diagonal weight matrix and using random initial guess...')
 param_estim_repli = np.zeros(np.shape(param_initgrid))
