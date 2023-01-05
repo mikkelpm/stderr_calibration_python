@@ -156,7 +156,7 @@ print(opt_res['message'])
 param_initbound = [(1,3),(-0.5,0.5),(-1,1),(-1,1),(0.5*irf_z_data['TFP'][0]/100,1.5*irf_z_data['TFP'][0]/100),(-1,1),(-1,1)]
 param_lowerbound = [1,-0.5,-1,-1,0.5*irf_z_data['TFP'][0]/100,-1,-1]
 param_dist = [2,1,2,2,irf_z_data['TFP'][0]/100,2,2]
-param_initgrid = np.random.rand(10,7)
+param_initgrid = np.random.rand(30,7)
 param_initgrid = np.multiply(param_initgrid,param_dist)+param_lowerbound
 print('Replicating numerical optimization for diagonal weight matrix and using random initial guess...')
 param_estim_repli = np.zeros(np.shape(param_initgrid))
