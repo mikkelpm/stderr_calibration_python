@@ -138,7 +138,7 @@ def moment_fct(theta):
 
 # Estimation using diagonal weight matrix
 param_bounds = [(0,np.inf),(1e-6,np.inf),(-np.inf,np.inf),(-np.inf,np.inf),(0,np.inf),(-np.inf,np.inf),(-np.inf,np.inf)] # Parameter bounds
-param_init = np.array([1.352,0.144,0.951,0,0.072,0.460,0]) # Initial parameter guess
+param_init = np.array([1.352,0.144,0.951,0,0.072,0.460,0]) # Initial parameter guess (from Auclert et al.)
 
 print('Running numerical optimization for diagonal weight matrix...')
 opt_res = opt.minimize(lambda theta: np.sum(((moment-moment_fct(theta))/moment_se)**2),
@@ -151,6 +151,7 @@ print('Done.')
 assert opt_res['success']
 print('Convergence message:')
 print(opt_res['message'])
+
 
 #Standard errors
 obj = MinDist(moment_fct, moment, moment_se=moment_se)
