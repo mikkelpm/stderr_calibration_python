@@ -22,7 +22,7 @@ using functions produced by Auclert, Bardozcy, Rognlie & Straub (ECMA, 2021)
 
 horzs = [0,1,2,8] # Response horizons (quarters after shock)
 
-# TFP shock (Chang, Chen & Schorfheide, 2021, Figures 7 and 9)
+# TFP shock (Chang, Chen & Schorfheide, 2023, Figures 9 and 11)
 data_ccs = read_csv('data/chang_chen_schorfheide.csv')
 irf_z_data = {}
 for v in ['TFP','GDP','BelowCutoff']:
@@ -136,21 +136,38 @@ def moment_fct(theta):
 
 
 # Estimation using diagonal weight matrix
-param_bounds = [(0,np.inf),(1e-6,np.inf),(-np.inf,np.inf),(-np.inf,np.inf),(0,np.inf),(-np.inf,np.inf),(-np.inf,np.inf)] # Parameter bounds
-param_init = np.array([1.5,0.01,0,0,irf_z_data['TFP'][0]/100,0.5,0]) # Initial parameter guess
+param_bounds = [(0,np.inf),(1e-6,np.inf),(-2,2),(-1,1),(0,np.inf),(-2,2),(-1,1)] # Parameter bounds
+param_init_default = np.array([1.32,0.14,0,0,irf_z_data['TFP'][0]/100,0.463,0]) # Posterior mode estimates from Auclert et al. (ECMA 2021, Table F.III), and imposing simple random walk for TFP
+param_init_sim = [(0,2*param_init_default[0]),(1e-6,2*param_init_default[1]),(-0.99,0.99),(0,0),(0,2*param_init_default[4]),(-0.99,0.99),(0,0)] # Ranges of uniform simulated starting values
+
+num_init = 100 # Number of initial parameter values
+funval = np.inf
+param_estim = param_init_default
+rng = np.random.default_rng(seed=1) # Generator for random initial values
 
 print('Running numerical optimization for diagonal weight matrix...')
-opt_res = opt.minimize(lambda theta: np.sum(((moment-moment_fct(theta))/moment_se)**2),
-                       param_init,
-                       method='L-BFGS-B',
-                       bounds=param_bounds,
-                       callback=lambda x: print(np.array_str(x, precision=3, suppress_small=True)))
-param_estim = opt_res['x'] # Parameter estimates
-print('Done.')
-assert opt_res['success']
-print('Convergence message:')
-print(opt_res['message'])
 
+for i in range(num_init):
+    print(f'Starting value {i+1:3d}/{num_init:3d}:')
+    if i==0: # Use default initial parameter values
+        param_init = param_init_default
+    else: # Draw random initial parameter values
+        param_init = np.array([rng.uniform(low=bnd[0],high=bnd[1]) for bnd in param_init_sim])
+    print(param_init)
+    opt_res = opt.minimize(lambda theta: np.sum(((moment-moment_fct(theta))/moment_se)**2),
+                           param_init,
+                           method='L-BFGS-B',
+                           bounds=param_bounds,
+                           callback=lambda x: print(np.array_str(x, precision=3, suppress_small=True)))
+    print(opt_res['message'])
+    if opt_res['fun'] < funval: # Store results if better than previous optimum
+        param_estim = opt_res['x'] # Parameter estimates
+        funval = opt_res['fun'] # Optimized objective function
+        print('New optimum:')
+        print(funval)
+        print(param_estim)
+    
+print('Done.')
 
 #Standard errors
 obj = MinDist(moment_fct, moment, moment_se=moment_se)
