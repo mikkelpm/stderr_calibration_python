@@ -36,6 +36,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 .highlight .m { color: var(--jp-mirror-editor-number-color) } /* Literal.Number */
 .highlight .s { color: var(--jp-mirror-editor-string-color) } /* Literal.String */
 .highlight .ow { color: var(--jp-mirror-editor-operator-color); font-weight: bold } /* Operator.Word */
+.highlight .pm { color: var(--jp-mirror-editor-punctuation-color) } /* Punctuation.Marker */
 .highlight .w { color: var(--jp-mirror-editor-variable-color) } /* Text.Whitespace */
 .highlight .mb { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Bin */
 .highlight .mf { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Float */
@@ -13976,7 +13977,7 @@ $$\begin{pmatrix} \mu_1 \\ \mu_2 \\ \mu_3 \end{pmatrix} =  \begin{pmatrix} \thet
 <p>We observe the noisy estimates $(\hat{\mu}_1,\hat{\mu}_2,\hat{\mu}_3) = (1.1,0.8,-0.1)$ of the true moments. The standard errors of the three empirical moments are $(\hat{\sigma}_1,\hat{\sigma}_2,\hat{\sigma}_3)=(0.1,0.2,0.05)$.</p>
 <p>We will estimate the parameters $(\theta_1,\theta_2)$ by minimum distance, matching the model-implied moments $h(\theta_1,\theta_2)$ to the empirical moments:
 $$\hat{\theta} = \text{argmin}_{\theta}\; (\hat{\mu}-h(\theta))'\hat{W}(\hat{\mu}-h(\theta)).$$</p>
-<p>To compute standard errors for the estimated parameters, test hypotheses, and compute the efficient weight matrix $\hat{W}$, we use the formulas in <a href="https://scholar.princeton.edu/mikkelpm/calibration">Cocci &amp; Plagborg-Møller (2021)</a>, which do not require knowledge of the correlation structure of the empirical moments.</p>
+<p>To compute standard errors for the estimated parameters, test hypotheses, and compute the efficient weight matrix $\hat{W}$, we use the formulas in <a href="https://arxiv.org/abs/2109.08109">Cocci &amp; Plagborg-Møller (2023)</a>, which do not require knowledge of the correlation structure of the empirical moments.</p>
 <h2 id="Define-the-model">Define the model<a class="anchor-link" href="#Define-the-model">&#182;</a></h2><p>We first import relevant packages and define the model and data.</p>
 
 </div>
@@ -14119,12 +14120,12 @@ Worst-case moment var-cov matrix for estimating theta_2
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
 <pre>     pcost       dcost       gap    pres   dres   k/t
  0:  2.0000e+00  2.0000e+00  1e+00  9e-02  0e+00  1e+00
- 1:  2.8317e+00  2.7762e+00  4e-01  3e-02  2e-17  3e-01
- 2:  2.8651e+00  2.8553e+00  6e-02  4e-03  5e-17  4e-02
- 3:  2.8870e+00  2.8845e+00  1e-02  6e-04  7e-17  5e-03
- 4:  2.8889e+00  2.8888e+00  4e-04  2e-05  4e-18  2e-04
- 5:  2.8889e+00  2.8889e+00  9e-06  6e-07  2e-17  4e-06
- 6:  2.8889e+00  2.8889e+00  2e-07  1e-08  1e-17  9e-08
+ 1:  2.8317e+00  2.7762e+00  4e-01  3e-02  8e-18  3e-01
+ 2:  2.8651e+00  2.8553e+00  6e-02  4e-03  1e-17  4e-02
+ 3:  2.8870e+00  2.8845e+00  1e-02  6e-04  4e-17  5e-03
+ 4:  2.8889e+00  2.8888e+00  4e-04  2e-05  3e-17  2e-04
+ 5:  2.8889e+00  2.8889e+00  9e-06  6e-07  8e-18  4e-06
+ 6:  2.8889e+00  2.8889e+00  2e-07  1e-08  7e-18  9e-08
 Optimal solution found.
 
 t-statistics for testing individual parameters
@@ -14178,16 +14179,16 @@ p-value of joint test
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
 <pre>     pcost       dcost       gap    pres   dres   k/t
  0:  2.0000e+00  2.0000e+00  1e+00  9e-02  0e+00  1e+00
- 1:  2.8317e+00  2.7762e+00  4e-01  3e-02  2e-17  3e-01
- 2:  2.8651e+00  2.8553e+00  6e-02  4e-03  5e-17  4e-02
- 3:  2.8870e+00  2.8845e+00  1e-02  6e-04  7e-17  5e-03
- 4:  2.8889e+00  2.8888e+00  4e-04  2e-05  4e-18  2e-04
- 5:  2.8889e+00  2.8889e+00  9e-06  6e-07  2e-17  4e-06
- 6:  2.8889e+00  2.8889e+00  2e-07  1e-08  1e-17  9e-08
+ 1:  2.8317e+00  2.7762e+00  4e-01  3e-02  8e-18  3e-01
+ 2:  2.8651e+00  2.8553e+00  6e-02  4e-03  1e-17  4e-02
+ 3:  2.8870e+00  2.8845e+00  1e-02  6e-04  4e-17  5e-03
+ 4:  2.8889e+00  2.8888e+00  4e-04  2e-05  3e-17  2e-04
+ 5:  2.8889e+00  2.8889e+00  9e-06  6e-07  8e-18  4e-06
+ 6:  2.8889e+00  2.8889e+00  2e-07  1e-08  7e-18  9e-08
 Optimal solution found.
 
 p-value of joint test
-0.19901704910658857
+0.19901704910658835
 </pre>
 </div>
 </div>

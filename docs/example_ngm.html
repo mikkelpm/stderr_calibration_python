@@ -36,6 +36,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 .highlight .m { color: var(--jp-mirror-editor-number-color) } /* Literal.Number */
 .highlight .s { color: var(--jp-mirror-editor-string-color) } /* Literal.String */
 .highlight .ow { color: var(--jp-mirror-editor-operator-color); font-weight: bold } /* Operator.Word */
+.highlight .pm { color: var(--jp-mirror-editor-punctuation-color) } /* Punctuation.Marker */
 .highlight .w { color: var(--jp-mirror-editor-variable-color) } /* Text.Whitespace */
 .highlight .mb { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Bin */
 .highlight .mf { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Float */
@@ -13972,7 +13973,7 @@ a.anchor-link {
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <h1 id="Standard-errors-for-calibrated-parameters:-Neoclassical-Growth-Model-example">Standard errors for calibrated parameters: Neoclassical Growth Model example<a class="anchor-link" href="#Standard-errors-for-calibrated-parameters:-Neoclassical-Growth-Model-example">&#182;</a></h1><p><em>We are grateful to Ben Moll for suggesting this example. Any errors are our own.</em></p>
-<p>In this notebook we will work through the basic logic of <a href="https://scholar.princeton.edu/mikkelpm/calibration">Cocci &amp; Plagborg-Møller (2021)</a> in the context of calibrating a simple version of the Neoclassical Growth Model (NGM). Though the model is highly stylized, it helps provide intuition for our procedures. Please see our paper for other, arguably more realistic, empirical applications.</p>
+<p>In this notebook we will work through the basic logic of <a href="https://arxiv.org/abs/2109.08109">Cocci &amp; Plagborg-Møller (2023)</a> in the context of calibrating a simple version of the Neoclassical Growth Model (NGM). Though the model is highly stylized, it helps provide intuition for our procedures. Please see our paper for other, arguably more realistic, empirical applications.</p>
 <h2 id="Model">Model<a class="anchor-link" href="#Model">&#182;</a></h2><p>We consider the simplest version of the NGM without population growth or technological growth. As explained in section 3.4 of <a href="https://perhuaman.files.wordpress.com/2014/06/macrotheory-dirk-krueger.pdf">Dirk Krueger's lecture notes</a> (note the difference in notation), this model implies three key steady-state equations:</p>
 <ol>
 <li><strong>Euler equation:</strong> $r = \rho$, where $\rho$ is the household discount rate and $r$ is the real interest rate.</li>
@@ -14012,7 +14013,7 @@ $$\hat{\sigma}(\hat{\alpha}) \leq |\hat{x}_1|\hat{\sigma}\left(\hat{r}\right) + 
 where
 $$\hat{x}_1=\hat{x}_2=\widehat{\frac{K}{Y}},\quad \hat{x}_3=\left(\hat{r}+\widehat{\frac{I}{K}} \right).$$
 Notice that this upper bound only depends on things that we know: the sample averages themselves and their individual standard errors (but not the correlations across moments).</p>
-<p>It's impossible to improve the bound without further knowledge of the correlation structure: The bound turns out to equal the actual standard error when the three sample averages are perfectly correlated with each other. This is proved in Lemma 1 in <a href="https://scholar.princeton.edu/mikkelpm/calibration">our paper</a>. For this reason, we refer to the standard error bound as the <em>worst-case standard error</em>.</p>
+<p>It's impossible to improve the bound without further knowledge of the correlation structure: The bound turns out to equal the actual standard error when the three sample averages are perfectly correlated with each other. This is proved in Lemma 1 in <a href="https://arxiv.org/abs/2109.08109">our paper</a>. For this reason, we refer to the standard error bound as the <em>worst-case standard error</em>.</p>
 <h2 id="Numerical-example">Numerical example<a class="anchor-link" href="#Numerical-example">&#182;</a></h2><p>Our software package makes it easy to calculate worst-case standard errors. As an illustration, suppose the sample averages (with standard errors in parentheses) equal
 $$\hat{r}=0.02\;(0.002), \quad \widehat{\frac{I}{K}}=0.08\;(0.01), \quad \widehat{\frac{K}{Y}} = 3\;(0.1).$$
 We define the model equations and data as follows. Let $\theta=(\rho,\delta,\alpha)$ and $\mu=(r,\frac{I}{K},\frac{K}{Y})$ denote the vectors of parameters and moments, respectively.</p>
@@ -14146,10 +14147,10 @@ Worst-case standard errors
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
 <pre>     pcost       dcost       gap    pres   dres   k/t
  0:  1.0118e-29  1.0118e-29  1e-02  2e+00  0e+00  1e+00
- 1: -4.4391e-18  1.0118e-29  1e-04  2e-02  1e-17  1e-02
- 2: -8.6524e-20  1.0118e-29  1e-06  2e-04  2e-18  1e-04
- 3: -6.3766e-22  1.0118e-29  1e-08  2e-06  7e-18  1e-06
- 4: -5.9271e-24  1.0118e-29  1e-10  2e-08  2e-18  1e-08
+ 1: -4.4391e-18  1.0118e-29  1e-04  2e-02  7e-18  1e-02
+ 2: -7.3161e-20  1.0118e-29  1e-06  2e-04  3e-18  1e-04
+ 3: -8.8737e-22  1.0118e-29  1e-08  2e-06  5e-18  1e-06
+ 4: -9.2425e-24  1.0118e-29  1e-10  2e-08  7e-18  1e-08
 Optimal solution found.
 Error in matching non-targeted moment
 -0.09999999999999998
@@ -14170,7 +14171,7 @@ t-statistic
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <p>Since the absolute value of the t-statistic lies between 1.64 and 1.96, we can reject the validity of the model at the 10% significance level, but not at the 5% level.</p>
 <p>The over-identification test checks how different the estimate $\hat{\alpha}$ would have been if we had instead computed it as the sample average capital share of income $1-0.6=0.4$. Is the difference in parameter estimates between the two calibration strategies too large to be explained by statistical noise?</p>
-<h2 id="Other-features-in-the-paper">Other features in the paper<a class="anchor-link" href="#Other-features-in-the-paper">&#182;</a></h2><p>The above NGM example is very simple and stylized. In <a href="https://scholar.princeton.edu/mikkelpm/calibration">our paper</a> we extend the basic ideas along various dimensions that are relevant for applied research. For example:</p>
+<h2 id="Other-features-in-the-paper">Other features in the paper<a class="anchor-link" href="#Other-features-in-the-paper">&#182;</a></h2><p>The above NGM example is very simple and stylized. In <a href="https://arxiv.org/abs/2109.08109">our paper</a> we extend the basic ideas along various dimensions that are relevant for applied research. For example:</p>
 <ul>
 <li>The matched moments need not be simple sample averages, but could be regression coefficients, quantiles, etc. The moments need not be related to steady-state quantities, but could involve essentially any feature of the available data.</li>
 <li>The calibration (method-of-moments) estimator need not be available in closed form (usually one would obtain it by numerical optimization).</li>

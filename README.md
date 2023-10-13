@@ -5,9 +5,9 @@ Python package that computes worst-case standard errors (SE) for minimum distanc
 The computed worst-case SE for the estimated parameters are sharp upper bounds on the true SE (which depend on the unknown moment correlation structure). For over-identified models, the package also computes the efficient moment selection that minimizes the worst-case SE. Additionally, the package can carry out tests of parameter restrictions or over-identifying restrictions.
 
 **Reference:**
-Cocci, Matthew D., and Mikkel Plagborg-Møller (2021), "Standard Errors for Calibrated Parameters", [arXiv:2109.08109](https://arxiv.org/abs/2109.08109)
+Cocci, Matthew D., and Mikkel Plagborg-Møller (2023), "Standard Errors for Calibrated Parameters", [arXiv:2109.08109](https://arxiv.org/abs/2109.08109)
 
-Tested in: Python 3.8.11 (Anaconda distribution) on Windows 10 PC
+Tested in: Python 3.8.18 (Anaconda distribution) on Windows 10 PC with NumPy version 1.24.3.
 
 Other versions: [Matlab](https://github.com/mikkelpm/stderr_calibration_matlab)
 
@@ -19,9 +19,9 @@ Other versions: [Matlab](https://github.com/mikkelpm/stderr_calibration_matlab)
 
 - [stderr_calibration](stderr_calibration): Python package for minimum distance estimation, standard errors, and testing
 
-- [estimate_hank.py](estimate_hank.py): Empirical application to estimation of a heterogeneous agent New Keynesian macro model, using impulse response estimates from [Chang, Chen & Schorfheide (2021)](https://cpb-us-w2.wpmucdn.com/web.sas.upenn.edu/dist/e/242/files/2021/05/EvalHAmodels_v6_pub.pdf) and [Miranda-Agrippino & Ricco (2021)](https://doi.org/10.1257/mac.20180124), which are stored in the [data](data) folder
+- [estimate_hank.py](estimate_hank.py): Empirical application to estimation of a heterogeneous agent New Keynesian macro model, using impulse response estimates from [Chang, Chen & Schorfheide (2023)](https://web.sas.upenn.edu/schorf/files/2023/09/EvalHAmodels_v15_nocolor.pdf) and [Miranda-Agrippino & Ricco (2021)](https://doi.org/10.1257/mac.20180124), which are stored in the [data](data) folder
 
-- [sequence_jacobian](sequence_jacobian): Copy of the [Sequence-Space Jacobian](https://github.com/shade-econ/sequence-jacobian) package developed by [Auclert, Bardóczy, Rognlie & Straub (2021)](http://web.stanford.edu/~aauclert/sequence_space_jacobian.pdf), with minor changes made to the file [hank.py](sequence_jacobian/hank.py)
+- [sequence_jacobian](sequence_jacobian): Copy of the [Sequence-Space Jacobian](https://github.com/shade-econ/sequence-jacobian) package developed by [Auclert, Bardóczy, Rognlie & Straub (2021)](https://doi.org/10.3982/ECTA17434), with minor changes made to the file [hank.py](sequence_jacobian/hank.py)
 
 - [tests](tests): Unit tests intended for use with the [pytest](https://docs.pytest.org/) framework
 

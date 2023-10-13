@@ -18,7 +18,7 @@ If desired, also computes:
 
 Reference:
 Cocci, Matthew D. & Mikkel Plagborg-Moller, "Standard Errors for Calibrated Parameters"
-https://scholar.princeton.edu/mikkelpm/calibration
+https://arxiv.org/abs/2109.08109
 """
 
 
